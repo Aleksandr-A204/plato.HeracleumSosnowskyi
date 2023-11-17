@@ -1,6 +1,7 @@
 export type FileInfo = {
-  name: string,
-  type: string
+  fileName: string,
+  type: string,
+  lastModified: number
 }
 
 export type FileResponse = {
