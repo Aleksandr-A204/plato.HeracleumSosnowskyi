@@ -1,8 +1,9 @@
 using HeracleumSosnowskyiService.Configuration;
-using HeracleumSosnowskyiService.Data;
 using HeracleumSosnowskyiService.Interfaces;
+using HeracleumSosnowskyiService.Services;
 using HeracleumSosnowskyiService.Storage;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,28 +13,32 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Register services here
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(nameof(MongoDbSettings)));
-builder.Services.AddSingleton<MongoDBContext>(serviceProvider =>
-{
-    var settings = serviceProvider.GetRequiredService<IOptions<MongoDbSettings>>().Value;
-    return new MongoDBContext(settings.ConnectionString, settings.DatabaseName);
-});
 
 // Определяем FileCacheRepository и FilesRepository как скопед
-builder.Services.AddSingleton<FileInfoRepository>();
-builder.Services.AddSingleton<IFilesRepository, FileStreamRepository>();
+builder.Services.AddScoped<IFilesRepository, FilesRepository>();
+builder.Services.AddScoped<ICachingService, CachingService>();
+
+builder.Services.AddMemoryCache();
+builder.Services.TryAdd(ServiceDescriptor.Scoped<IMemoryCache, MemoryCache>());
 
 builder.Services.AddControllers();
 
 // Enable CORS
-builder.Services.AddCors(option => option.AddPolicy(name: "myAllowSpecificOrigins", policy =>
-    policy.WithOrigins("http://localhost:5173").AllowAnyMethod().AllowAnyHeader()));
+builder.Services.AddCors(option => option.AddPolicy(name: "myAllowSpecificOrigins", builder =>
+    builder.WithOrigins("http://localhost:5173").AllowAnyMethod().AllowAnyHeader()));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(configur =>
+{
+    configur.SwaggerDoc("v1", new() { Title = "Plato.HeracleumSosnowskiy API", Version = "v1" });
+});
+
+//builder.Services.AddControllersWithViews().AddNewtonsoftJson();
 
 // Установим глобально размер тела любого запроса в байтах - NULL.
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = null);
+
 
 var app = builder.Build();
 
@@ -41,7 +46,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(configur => configur.SwaggerEndpoint("/swagger/v1/swagger.json", "Plato.HeracleumSosnowskiy API v1"));
 }
 
 app.UseAuthorization();

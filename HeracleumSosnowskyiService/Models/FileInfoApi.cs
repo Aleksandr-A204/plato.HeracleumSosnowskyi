@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HeracleumSosnowskyiService.Models
 {
-    public class FileApi
+    public class FileInfoApi
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -15,7 +15,10 @@ namespace HeracleumSosnowskyiService.Models
 
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]
         public string? Type { get; set; }
+
         public long LastModified { get; set; } = 0;
 
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? FileStreamId { get; set; }
     }
 }

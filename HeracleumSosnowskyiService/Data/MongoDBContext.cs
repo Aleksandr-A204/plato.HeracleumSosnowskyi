@@ -1,4 +1,5 @@
-﻿using HeracleumSosnowskyiService.Models;
+﻿using HeracleumSosnowskyiService.Configuration;
+using HeracleumSosnowskyiService.Models;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
@@ -6,18 +7,18 @@ namespace HeracleumSosnowskyiService.Data
 {
     public class MongoDBContext
     {
-        private readonly IMongoDatabase _database;
+        private IMongoDatabase? Database { get; }
 
-        public MongoDBContext(string? connectionString, string? databaseName)
+        public MongoDBContext(MongoDbSettings mongoDbSettings)
         {
-            var mongoClient = new MongoClient(connectionString);
-            _database = mongoClient.GetDatabase(databaseName);
+            var mongoClient = new MongoClient(mongoDbSettings.ConnectionString);
+            Database = mongoClient.GetDatabase(mongoDbSettings.DatabaseName);
         }
 
-        public IMongoCollection<FileApi> FilesInfo => 
-            _database.GetCollection<FileApi>("FilesInforamion");
+        public IMongoCollection<FileInfoApi> FilesInfoCollection =>
+            Database.GetCollection<FileInfoApi>("FilesInforamion");
 
         public IGridFSBucket GridFilesStream =>
-            new GridFSBucket(_database);
+            new GridFSBucket(Database);
     }
 }

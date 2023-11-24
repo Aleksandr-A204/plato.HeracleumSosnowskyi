@@ -1,10 +1,15 @@
-﻿namespace HeracleumSosnowskyiService.Interfaces
+﻿using HeracleumSosnowskyiService.Models;
+using MongoDB.Bson;
+
+namespace HeracleumSosnowskyiService.Interfaces
 {
     public interface IFilesRepository
     {
-        Task<bool> CreateAsync(Stream newFileStream);
+        Task<string> CreateFileStreamAsync(Stream newFileStream);
+        Task CreateFileInfoAsync(FileInfoApi newFileInfo);
         Task<bool> DeleteFile(string id);
-        Task<Stream> GetFileById(string id);
+        Task<FileInfoApi> GetFileInfoById(string id);
         Task<bool> UpdateFile(Stream fileStream);
+        Task<bool> IsIdEqualsAsync(string id);
     }
 }
