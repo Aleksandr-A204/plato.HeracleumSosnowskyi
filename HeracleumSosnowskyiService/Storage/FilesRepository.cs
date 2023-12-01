@@ -16,45 +16,16 @@ namespace HeracleumSosnowskyiService.Storage
 
         public async Task CreateFileInfoAsync(FileInfoApi newFileInfo) => await FilesInfoCollection.InsertOneAsync(newFileInfo);
 
-        public async Task<string> CreateFileStreamAsync(Stream newFileStream) => await GridFilesStream.UploadFromStreamAsync("fileTest", newFileStream);
+        public async Task<ObjectId> CreateFileStreamAsync(string filename, Stream source) => await GridFilesStream.UploadFromStreamAsync(filename, source);
 
         public Task<bool> DeleteFile(string id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<FileInfoApi> GetFileInfoById(string id)
-        {
-            return await FilesInfoCollection.Find(field => field.Id == id).FirstOrDefaultAsync();
-        }
+        public async Task<FileInfoApi> GetFileInfoByIdAsync(string id) => await FilesInfoCollection.Find(field => field.Id == id).FirstOrDefaultAsync();
 
-        public Task<bool> UpdateFile(Stream fileStream)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> IsIdEqualsAsync(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        private struct Entry
-        {
-            public Entry(FileInfoApi value)
-            {
-                UploadDate = DateTime.Now;
-                Value = value;
-            }
-
-            public DateTime UploadDate { get; }
-            public FileInfoApi Value { get; }
-        }
-
-        //public async Task<Stream> GetFileById(string id)
-        //{
-        //    var fileStream = await _gridFS.OpenDownloadStreamAsync(new ObjectId(id));
-
-        //    return fileStream;
-        //}
+        public async Task UpdateFileInfoAsync(string id, ObjectId fsId) => await FilesInfoCollection.UpdateOneAsync(f => f.Id == id,
+                Builders<FileInfoApi>.Update.Set(fs => fs.FileStreamId, fsId));
     }
 }

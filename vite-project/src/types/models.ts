@@ -1,6 +1,6 @@
 export type FileInfo = {
   fileName: string,
-  type: string,
+  MimeType: string,
   lastModified: number
 }
 

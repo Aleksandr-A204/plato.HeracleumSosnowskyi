@@ -1,4 +1,5 @@
-﻿using HeracleumSosnowskyiService.Data;
+﻿using Amazon.Runtime.Internal.Util;
+using HeracleumSosnowskyiService.Data;
 using HeracleumSosnowskyiService.Helpers;
 using HeracleumSosnowskyiService.Interfaces;
 using HeracleumSosnowskyiService.Models;
@@ -6,10 +7,12 @@ using HeracleumSosnowskyiService.Services;
 using HeracleumSosnowskyiService.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.ComponentModel;
 using System.IO;
+using static System.Net.WebRequestMethods;
 
 namespace HeracleumSosnowskyiService.Controllers.v1
 {
@@ -19,13 +22,11 @@ namespace HeracleumSosnowskyiService.Controllers.v1
     {
         private readonly IFilesRepository _repository;
         private readonly IMemoryCache _memoryCache;
-        private readonly ICachingService _cachingService;
 
-        public FileApiController(IFilesRepository repository, IMemoryCache memoryCache, ICachingService cachingService)
+        public FileApiController(IFilesRepository repository, IMemoryCache memoryCache)
         {
-            _repository = repository;
-            _memoryCache = memoryCache;
-            _cachingService = cachingService;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
         }
 
         [HttpGet]
@@ -45,17 +46,14 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateFile([FromBody] FileInfoApi fileInfo)
         {
-            var res = _memoryCache.GetOrCreate("file", entry =>
-            {
-                entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
-                return fileInfo;
+            await _repository.CreateFileInfoAsync(fileInfo);
+
+            _memoryCache.Set("file", fileInfo, new MemoryCacheEntryOptions { 
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                Size = 16
             });
 
-            fileInfo.Id = res?.Id ?? ObjectId.GenerateNewId().ToString();
-
-            //await _repository.CreateFileInfoAsync(fileInfo);
-
-            return ValidationHelper.IsIdValid(fileInfo.Id) ? Ok(new { fileId = fileInfo.Id }) : 
+            return ValidationHelper.IsIdValid(fileInfo.Id) ? Ok(new { fileId = fileInfo.Id }) :
                 NotFound("Ошибка запроса при выборе файла. Идентификатор выбранного файла некорректный.");
         }
 
@@ -74,15 +72,15 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             if (!ValidationHelper.IsIdValid(id))
                 return BadRequest("Ошибка запроса при загрузке файла. Полученный при вызове CreateFile идентификатор загрузки файла некорректный.");
 
-            var res = _memoryCache.Get<FileInfoApi>("file");
+            if (!_memoryCache.TryGetValue("file", out FileInfoApi? fileInfo))
+                fileInfo = await _repository.GetFileInfoByIdAsync(id);
 
-            res.FileStreamId = await _repository.CreateFileStreamAsync(Request.Body);
 
-            await _repository.CreateFileInfoAsync(res);
+            if (fileInfo == null)
+                return NotFound("Ой, что-то пошло не так.");
 
-            //var fileId = await _context.GridFilesStream.UploadFromStreamAsync("fileTest", Request.Body);
-
-            //return ObjectId.TryParse(fileId.ToString(), out _) ? Ok(fileId) : BadRequest();
+            var newFsId = await _repository.CreateFileStreamAsync(fileInfo.FileName, Request.Body);
+            await _repository.UpdateFileInfoAsync(id, newFsId);
 
             return Ok();
         }

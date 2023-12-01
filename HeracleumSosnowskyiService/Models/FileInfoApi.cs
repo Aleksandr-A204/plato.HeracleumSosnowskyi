@@ -13,12 +13,13 @@ namespace HeracleumSosnowskyiService.Models
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]
         public string? FileName { get; set; }
 
+        [BsonElement("MIME-type")]
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]
-        public string? Type { get; set; }
+        public string? MimeType { get; set; }
 
         public long LastModified { get; set; } = 0;
 
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? FileStreamId { get; set; }
+        public ObjectId FileStreamId { get; set; }
     }
 }

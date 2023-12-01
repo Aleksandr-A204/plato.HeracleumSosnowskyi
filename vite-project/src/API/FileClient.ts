@@ -1,5 +1,7 @@
 import axios from "axios";
 
+//import ObjectID from "bson-objectid";
+
 //import * as IModels from "@/interfeces/IModels";
 import * as models from "@/types/models";
 
@@ -7,6 +9,8 @@ const API_URL: string = "http://localhost:5181/fileapi";
 
 class FileClient {
   async createFile(fileInfo: models.FileInfo): Promise<string> {
+    //fileInfo.id = ObjectID().toHexString();
+
     return await axios.post(`${API_URL}`, fileInfo, {
       headers: {
         "Content-Type": "application/json"

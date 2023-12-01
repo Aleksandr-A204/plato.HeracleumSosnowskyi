@@ -14,8 +14,7 @@ namespace HeracleumSosnowskyiService.Services
         {
             try
             {
-                T item = _memoryCache.Get<T>(key);
-                return item;
+                return _memoryCache.Get<T>(key);
             }
             catch (Exception)
             {

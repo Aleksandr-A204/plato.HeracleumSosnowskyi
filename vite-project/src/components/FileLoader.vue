@@ -1,32 +1,37 @@
 <template>
-  <div>
+  <div class="block-fileloader">
+    <label class="label">
+      <slot />
+    </label>
     <input
       class="input-file"
       type="file"
       accept="image/tiff"
-      @change="readFile"
+      @change="event => readFile(event.target)"
     >
     <button
       @click="uploadFile"
       v-if="showMode">
       Загрузить
     </button>
-    <button @click="downloadFile">
-      Скачать
-    </button>
-    <!-- <PlatoButton v-if="showMode">
-      Загрузить
-    </PlatoButton> -->
   </div>
 </template>
 
 <script lang="ts">
+import _ from "lodash";
 import FileClient from "../API/FileClient";
 
 import { AxiosError } from "axios";
 import { defineComponent } from "vue";
 
 export default defineComponent({
+  props: {
+    filekey: {
+      type: String,
+      required: true
+    }
+  },
+
   data() {
     return {
       showMode: false,
@@ -42,18 +47,23 @@ export default defineComponent({
   },
 
   methods: {
-    async readFile(event: any) {
-      const files = event.target.files;
+    async readFile(eventTarget: any) {
+      const files = eventTarget.files;
       if (!files) {
         return;
       }
 
       this.file = files[0];
 
+      if (!_.includes(this.file.name, this.filekey)) {
+        console.error(`Ошибка! Пожалуйста, ещё раз выберите файл с именем, содержащим ${this.filekey}.`);
+        return;
+      }
+
       try {
         this.responseData = await this.fileClient.createFile({
           fileName: this.file.name,
-          type: this.file.type,
+          MimeType: this.file.type,
           lastModified: this.file.lastModified
         });
 
@@ -84,15 +94,16 @@ export default defineComponent({
 
         this.showMode = false;
       }
-    },
-
-    async downloadFile() {
-      await this.fileClient.downloadFile();
     }
   }
 });
 </script>
 
 <style scoped>
-
+.block-fileloader{
+  margin: 5px 0px;
+}
+.label{
+margin: 10px;
+}
 </style>
