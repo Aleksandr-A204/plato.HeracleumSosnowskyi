@@ -71,4 +71,4 @@ c=a+b;
 > Файл с кодом: lesson3.py
 ### 4. Логика
 
-[Вверх](#anchor)
+[Вверх](https://github.com/Aleksandr-A204/plato.HeracleumSosnowskyi.Server/tree/main)
