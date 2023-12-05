@@ -13,12 +13,9 @@ namespace HeracleumSosnowskyiService.Controllers
             return View();
         }
 
-        [HttpPost]
-        public void Post()
+        [HttpPut]
+        public void StartProcess()
         {
-            //Console.WriteLine(Directory.GetCurrentDirectory());
-            
-
             Process.Start("script.bat");
         }
     }
