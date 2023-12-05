@@ -77,7 +77,7 @@ namespace HeracleumSosnowskyiService.Controllers.v1
 
 
             if (fileInfo == null)
-                return NotFound("Ой, что-то пошло не так.");
+                return NotFound("Что-то пошло не так.");
 
             var newFsId = await _repository.CreateFileStreamAsync(fileInfo.FileName, Request.Body);
             await _repository.UpdateFileInfoAsync(id, newFsId);
