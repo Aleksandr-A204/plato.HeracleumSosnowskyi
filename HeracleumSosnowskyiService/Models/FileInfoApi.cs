@@ -10,6 +10,7 @@ namespace HeracleumSosnowskyiService.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
 
+        [BsonElement("filename")]
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]
         public string? FileName { get; set; }
 
@@ -17,8 +18,10 @@ namespace HeracleumSosnowskyiService.Models
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]
         public string? MimeType { get; set; }
 
+        [BsonElement("lastModified")]
         public long LastModified { get; set; } = 0;
 
+        [BsonElement("fileStream_id")]
         [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId FileStreamId { get; set; }
     }

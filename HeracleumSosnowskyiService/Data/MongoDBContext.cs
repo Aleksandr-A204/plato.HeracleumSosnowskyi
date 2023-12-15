@@ -15,10 +15,10 @@ namespace HeracleumSosnowskyiService.Data
             Database = mongoClient.GetDatabase(mongoDbSettings.DatabaseName);
         }
 
-        public IMongoCollection<FileInfoApi> FilesInfoCollection =>
-            Database.GetCollection<FileInfoApi>("FilesInforamion");
+        public IMongoCollection<FileInfoApi> FilesInfoCollection() =>
+            Database.GetCollection<FileInfoApi>("FilesInformation");
 
-        public IGridFSBucket GridFilesStream =>
+        public IGridFSBucket GridFilesStream() =>
             new GridFSBucket(Database);
     }
 }

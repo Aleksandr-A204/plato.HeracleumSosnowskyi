@@ -16,7 +16,8 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(nam
 
 // Определяем FileCacheRepository и FilesRepository как скопед
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
-builder.Services.AddScoped<ICachingService, CachingService>();
+//builder.Services.AddScoped<ICachingService, CachingService>();
+builder.Services.AddScoped<IProcessService, ProcessService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.TryAdd(ServiceDescriptor.Scoped<IMemoryCache, MemoryCache>());

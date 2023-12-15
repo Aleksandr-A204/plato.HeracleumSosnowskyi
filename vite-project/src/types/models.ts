@@ -1,9 +1,10 @@
 export type FileInfo = {
-  fileName: string,
-  MimeType: string,
+  filename: string,
+  mimeType: string,
   lastModified: number
 }
 
-export type FileResponse = {
+export type FileStream = {
   id: string,
+  file: File
 }

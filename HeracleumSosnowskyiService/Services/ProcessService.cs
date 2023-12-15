@@ -1,25 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
-using System;
+﻿using HeracleumSosnowskyiService.Interfaces;
 using System.Diagnostics;
 
-namespace HeracleumSosnowskyiService.Controllers
+namespace HeracleumSosnowskyiService.Services
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class CalculationMethodController : Controller
+    public class ProcessService : IProcessService
     {
-        [HttpGet]
-        public IActionResult Index()
-        {
-            return Ok();
-        }
-
-        [HttpPut]
-        public async Task RunProcess()
+        public async Task RunCmdLineAsync(string arguments = "test.bat")
         {
             // Populate process information
-            var processInfo = new ProcessStartInfo("cmd.exe", "/c test.bat");
+            var processInfo = new ProcessStartInfo("cmd.exe", $"/c {arguments}");
             //var processInfo = new ProcessStartInfo("cmd.exe") 
             //{
             //    Arguments = "/c test.bat" + " " + "\"D:\\1\""
