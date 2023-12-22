@@ -2,6 +2,6 @@
 {
     public interface IProcessService
     {
-        Task RunCmdLineAsync(string arguments);
+        Task RunCmdLineAsync(string argumets = "test.bat");
     }
 }

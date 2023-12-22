@@ -1,5 +1,4 @@
 ﻿using Amazon.Runtime.Internal.Util;
-using HeracleumSosnowskyiService.Data;
 using HeracleumSosnowskyiService.Helpers;
 using HeracleumSosnowskyiService.Interfaces;
 using HeracleumSosnowskyiService.Models;
@@ -32,12 +31,20 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         }
 
         [HttpGet]
-        [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Ok();
+            if (!_memoryCache.TryGetValue<IEnumerable<FileInfoApi>>("filesInfo", out var filesInfo))
+            {
+                filesInfo = await _repository.GetAllAsync();
+                _memoryCache.Set($"filesInfo", filesInfo, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)
+                });
+            }
+
+            return Ok(filesInfo);
         }
 
         [Description("Найдет файл по id и возвращает информацию о файле")]
@@ -50,14 +57,8 @@ namespace HeracleumSosnowskyiService.Controllers.v1
                 return BadRequest();
 
             if (!_memoryCache.TryGetValue<FileInfoApi>($"file{id}", out var fileInfo))
-                try
-                {
-                    fileInfo = await _repository.GetFileInfoByIdAsync(id, cancellationToken);
-                }
-                catch (Exception)
-                {
-                    _logger.LogError("Our external service Plato was canceled while creating a new file.");
-                }
+                fileInfo = await _repository.GetFileInfoByIdAsync(id, cancellationToken);
+
 
             return fileInfo == null ? Ok(fileInfo) : NotFound("Не найдено информации о файле");
         }
@@ -74,7 +75,7 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             if (ValidationHelper.IsIdValid(fileInfo.Id))
                 _memoryCache.Set($"file{fileInfo.Id}", fileInfo, new MemoryCacheEntryOptions
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
                     Size = 16
                 });
             else
@@ -83,7 +84,7 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             return CreatedAtAction(nameof(GetFileInfoById), new { id = fileInfo.Id }, new { fileId = fileInfo.Id });
         }
 
-        [Description("Загружает файл и возвращает статус 200 'Успешно файл загружен'")]
+        [Description("Загружает файл и возвращает статус 200")]
         [HttpPut]
         [Consumes("application/octet-stream")]
         [Route("upload/{id}")]
@@ -99,15 +100,18 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             if (!ValidationHelper.IsIdValid(id))
                 return BadRequest("Ошибка запроса при загрузке файла. Полученный при вызове CreateFile идентификатор загрузки файла некорректный.");
 
-            if (!_memoryCache.TryGetValue<FileInfoApi>($"file{id}", out var fileInfo))
+            if (_memoryCache.TryGetValue<FileInfoApi>($"file{id}", out var fileInfo))
+                _memoryCache.Remove($"file{id}");
+            else
                 fileInfo = await _repository.GetFileInfoByIdAsync(id, cancellationToken);
 
 
-            if (fileInfo == null)
+            if (fileInfo?.FileName == null)
                 return NotFound("Что-то пошло не так.");
 
             var newFsId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body, cancellationToken);
             await _repository.UpdateFileInfoAsync(id, newFsId);
+
 
             return Ok();
         }

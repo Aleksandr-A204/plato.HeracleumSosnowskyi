@@ -1,6 +1,6 @@
-﻿namespace HeracleumSosnowskyiService.Configuration
+﻿namespace HeracleumSosnowskyiService.MongoDb.Configuration
 {
-    public class MongoDbSettings
+    public class MongoDbConfiguration
     {
         public string? ConnectionString { get; set; } = null;
         public string? DatabaseName { get; set; } = null;

@@ -8,7 +8,7 @@ namespace HeracleumSosnowskyiService.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
+        public string? Id { get; }
 
         [BsonElement("filename")]
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]

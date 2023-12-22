@@ -8,8 +8,9 @@ namespace HeracleumSosnowskyiService.Interfaces
     {
         Task CreateFileInfoAsync(FileInfoApi newFileInfo, CancellationToken cancellationToken);
         Task<ObjectId> UploadFileStreamAsync(string filename, Stream newFileStream, CancellationToken cancellationToken);
-        Task DouwloadFileStreamAsync(ObjectId fileId);
+        Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(string filename);
         Task<bool> DeleteFile(string id);
+        Task<IEnumerable<FileInfoApi>> GetAllAsync();
         Task<FileInfoApi> GetFileInfoByIdAsync(string id, CancellationToken cancellationToken);
         Task UpdateFileInfoAsync(string id, ObjectId fsId);
     }

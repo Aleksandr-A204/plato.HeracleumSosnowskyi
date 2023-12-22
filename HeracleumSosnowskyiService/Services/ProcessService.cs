@@ -5,14 +5,11 @@ namespace HeracleumSosnowskyiService.Services
 {
     public class ProcessService : IProcessService
     {
-        public async Task RunCmdLineAsync(string arguments = "test.bat")
+        public async Task RunCmdLineAsync(string arguments)
         {
             // Populate process information
-            var processInfo = new ProcessStartInfo("cmd.exe", $"/c {arguments}");
-            //var processInfo = new ProcessStartInfo("cmd.exe") 
-            //{
-            //    Arguments = "/c test.bat" + " " + "\"D:\\1\""
-            //};
+            var processInfo = new ProcessStartInfo("cmd.exe", $"/c test.bat \"{arguments}\"");
+
             processInfo.CreateNoWindow = true;
             processInfo.UseShellExecute = false;
             processInfo.RedirectStandardOutput = true;

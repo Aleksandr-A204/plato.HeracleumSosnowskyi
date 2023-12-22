@@ -1,4 +1,4 @@
-@echo off & chcp 1251 > nul
+@echo off & chcp 866 > nul
 setlocal ENABLEDELAYEDEXPANSION
-
-echo Hello
+cd %1
+dir

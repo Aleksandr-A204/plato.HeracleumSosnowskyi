@@ -1,9 +1,12 @@
-using HeracleumSosnowskyiService.Configuration;
 using HeracleumSosnowskyiService.Interfaces;
+using HeracleumSosnowskyiService.MongoDb.Configuration;
+using HeracleumSosnowskyiService.MongoDb.Data;
+using HeracleumSosnowskyiService.Repositories;
 using HeracleumSosnowskyiService.Services;
 using HeracleumSosnowskyiService.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,12 +15,14 @@ var builder = WebApplication.CreateBuilder(args);
 //.AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
 // Register services here
-builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(nameof(MongoDbSettings)));
+builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSection(nameof(MongoDbConfiguration)));
 
-// Определяем FileCacheRepository и FilesRepository как скопед
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
+builder.Services.AddScoped<ISatelliteImagesDatasetRepository, SatelliteImagesDatasetRepository>();
 //builder.Services.AddScoped<ICachingService, CachingService>();
 builder.Services.AddScoped<IProcessService, ProcessService>();
+
+builder.Services.AddDbContext<>
 
 builder.Services.AddMemoryCache();
 builder.Services.TryAdd(ServiceDescriptor.Scoped<IMemoryCache, MemoryCache>());
