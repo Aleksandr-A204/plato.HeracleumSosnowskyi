@@ -1,4 +1,4 @@
-﻿namespace HeracleumSosnowskyiService.MongoDb.Data.SatelliteFrequencyBands
+﻿namespace HeracleumSosnowskyiService.Data.SatelliteFrequencyBands
 {
     public enum Landsat8Bands
     {

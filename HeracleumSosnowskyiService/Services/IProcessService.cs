@@ -1,4 +1,4 @@
-﻿namespace HeracleumSosnowskyiService.Interfaces
+﻿namespace HeracleumSosnowskyiService.Services
 {
     public interface IProcessService
     {

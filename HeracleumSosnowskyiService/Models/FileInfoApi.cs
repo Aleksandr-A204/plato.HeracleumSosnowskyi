@@ -1,28 +1,23 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using HeracleumSosnowskyiService.Interfaces;
+using MongoDB.Bson;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HeracleumSosnowskyiService.Models
 {
     public class FileInfoApi
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; }
+        [Key]
+        public Ulid Id { get; } = Ulid.NewUlid();
 
-        [BsonElement("filename")]
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]
         public string? FileName { get; set; }
 
-        [BsonElement("MIME-type")]
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]
         public string? MimeType { get; set; }
 
-        [BsonElement("lastModified")]
         public long LastModified { get; set; } = 0;
 
-        [BsonElement("fileStream_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId FileStreamId { get; set; }
+        public FileMetadata? Metadata { get; set; }
     }
 }

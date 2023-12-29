@@ -1,44 +1,57 @@
-﻿using HeracleumSosnowskyiService.Helpers;
-using HeracleumSosnowskyiService.Interfaces;
+﻿using HeracleumSosnowskyiService.Data.MongoDb;
+using HeracleumSosnowskyiService.Data.PostgreSQL;
 using HeracleumSosnowskyiService.Models;
 using HeracleumSosnowskyiService.MongoDb.Configuration;
-using HeracleumSosnowskyiService.MongoDb.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
-using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
-using System.Threading;
 
-namespace HeracleumSosnowskyiService.Storage
+namespace HeracleumSosnowskyiService.Repositories
 {
     public class FilesRepository : MongoDBContext, IFilesRepository
     {
-        public FilesRepository(IOptions<MongoDbConfiguration> settings) : base(settings.Value) { }
+        private readonly PostgreSQLDbContext _context;
 
-        public IMongoCollection<FileInfoApi> FilesInfoCollection() => Database.GetCollection<FileInfoApi>("file.information");
+        public FilesRepository(PostgreSQLDbContext context, IOptions<MongoDbConfiguration> settings) : base(settings.Value)
+        {
+            _context = context;
+        }
 
         public IGridFSBucket GridFilesStream() => new GridFSBucket(Database);
 
-        public async Task CreateFileInfoAsync(FileInfoApi newFileInfo, CancellationToken ct) => await FilesInfoCollection().InsertOneAsync(document: newFileInfo, cancellationToken: ct);
+        public async Task<IEnumerable<FileMetadata>> GetAllAsync()
+            => await _context.FileMetadata.Include(x => x.FileInfo).Include(x => x.SatelliteData).ToListAsync();
 
-        public async Task<ObjectId> UploadFileStreamAsync(string filename, Stream source, CancellationToken ct) => await GridFilesStream().UploadFromStreamAsync(filename, source, cancellationToken: ct);
+        public async Task<IEnumerable<FileInfoApi>> GetAllFileInfoAsync() => await _context.FileInfo.ToListAsync();
+
+        public async Task<bool> TryAddAsync(FileMetadata metadata)
+        {
+            await _context.FileMetadata.AddAsync(metadata);
+            return await SaveAsync();
+        }
+
+        public async Task<FileInfoApi> GetFileInfoByIdAsync(Ulid id) => await _context.FileInfo.Include(x 
+            => x.Metadata).FirstOrDefaultAsync(field => field.Id == id) ?? new FileInfoApi();
+
+        public async Task<bool> SaveAsync() => await _context.SaveChangesAsync() > 0;
+
+        public async Task<bool> TryUpdateAsync(FileMetadata metadata)
+        {
+            _context.Entry(metadata).State = EntityState.Modified;
+            return await SaveAsync();
+        }
+
+        public async Task<SatelliteDataOfSpacesystem> FindOrInsertAsync(string landsatProductId) 
+            => await _context.SatelliteData.FirstOrDefaultAsync(field 
+                => field.LandsatProductId == landsatProductId) ?? new SatelliteDataOfSpacesystem { LandsatProductId = landsatProductId };
+
+        public async Task<string> UploadFileStreamAsync(string filename, Stream source) => (await GridFilesStream().UploadFromStreamAsync(filename, source)).ToString();
 
         public async Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(string filename)
         {
             return await GridFilesStream().OpenDownloadStreamByNameAsync(filename);
             // return await GridFilesStream().OpenDownloadStreamAsync(fileId);
         }
-
-        public Task<bool> DeleteFile(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<IEnumerable<FileInfoApi>> GetAllAsync() => await FilesInfoCollection().Find(_ => true).ToListAsync();
-
-        public async Task<FileInfoApi> GetFileInfoByIdAsync(string id, CancellationToken ct) => await FilesInfoCollection().Find(field => field.Id == id).FirstOrDefaultAsync(ct);
-
-        public async Task UpdateFileInfoAsync(string id, ObjectId fsId) => await FilesInfoCollection().UpdateOneAsync(f => f.Id == id,
-                Builders<FileInfoApi>.Update.Set(fs => fs.FileStreamId, fsId));
     }
 }

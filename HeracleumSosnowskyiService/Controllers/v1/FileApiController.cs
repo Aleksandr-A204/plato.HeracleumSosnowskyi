@@ -1,17 +1,11 @@
-﻿using Amazon.Runtime.Internal.Util;
-using HeracleumSosnowskyiService.Helpers;
-using HeracleumSosnowskyiService.Interfaces;
+﻿using HeracleumSosnowskyiService.Helpers;
 using HeracleumSosnowskyiService.Models;
-using HeracleumSosnowskyiService.Services;
-using HeracleumSosnowskyiService.Storage;
+using HeracleumSosnowskyiService.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Threading;
 
 namespace HeracleumSosnowskyiService.Controllers.v1
 {
@@ -31,36 +25,47 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         }
 
         [HttpGet]
+        [Route("fileinfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetFileInfoAll()
         {
             if (!_memoryCache.TryGetValue<IEnumerable<FileInfoApi>>("filesInfo", out var filesInfo))
             {
-                filesInfo = await _repository.GetAllAsync();
+                filesInfo = await _repository.GetAllFileInfoAsync();
                 _memoryCache.Set($"filesInfo", filesInfo, new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)
                 });
             }
-
             return Ok(filesInfo);
+        }
+
+        [HttpGet]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAll()
+        {
+            IEnumerable<FileMetadata> metadata = await _repository.GetAllAsync();
+
+            return Ok(metadata);
         }
 
         [Description("Найдет файл по id и возвращает информацию о файле")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetFileInfoById(string id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetById(string id)
         {
             if (!ValidationHelper.IsIdValid(id))
-                return BadRequest();
+                return BadRequest("Ошибка запроса при получении файла по индентификатору id. Индентификатор некорректный.");
 
             if (!_memoryCache.TryGetValue<FileInfoApi>($"file{id}", out var fileInfo))
-                fileInfo = await _repository.GetFileInfoByIdAsync(id, cancellationToken);
+                fileInfo = await _repository.GetFileInfoByIdAsync(Ulid.Parse(id));
 
 
-            return fileInfo == null ? Ok(fileInfo) : NotFound("Не найдено информации о файле");
+            return fileInfo != null ? Ok(fileInfo) : NotFound("Ошибка репозитории при получении файла по индентификатору id. Не найдено информации о файле.");
         }
 
         [Description("Создает новый файл и возвращает идентификатор для загрузки на сервер")]
@@ -68,52 +73,55 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateFile([FromBody] FileInfoApi fileInfo, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateFile([FromBody] FileInfoApi fileInfo)
         {
-            await _repository.CreateFileInfoAsync(fileInfo, cancellationToken);
+            var landsatPoductId = fileInfo.FileName?.Remove(fileInfo.FileName.Length - 10);
 
-            if (ValidationHelper.IsIdValid(fileInfo.Id))
+            var metadata = new FileMetadata
+            {
+                FileInfo = fileInfo,
+                SatelliteData = await _repository.FindOrInsertAsync(landsatPoductId)
+            };
+
+            if (await _repository.TryAddAsync(metadata))
                 _memoryCache.Set($"file{fileInfo.Id}", fileInfo, new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
                     Size = 16
                 });
             else
-                NotFound("Ошибка запроса при выборе файла. Идентификатор выбранного файла некорректный.");
+                return NotFound("Ошибка при добавлении данных о файле в БД.");
 
-            return CreatedAtAction(nameof(GetFileInfoById), new { id = fileInfo.Id }, new { fileId = fileInfo.Id });
+            return CreatedAtAction(nameof(GetById), new { id = fileInfo.Id }, new { fileId = fileInfo.Id });
         }
 
-        [Description("Загружает файл и возвращает статус 200")]
+        [Description("Загружает файл и возвращает идентификатор для обнаружения зоны произрастения Борщевик сосновского.")]
         [HttpPut]
         [Consumes("application/octet-stream")]
         [Route("upload/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Upload(
-            [Description("Идентификатор загрузки полученный при вызове CreateFile")] string id, CancellationToken cancellationToken
+            [Description("Идентификатор загрузки полученный при вызове CreateFile")] string id
             )
         {
-            if (Request.ContentType != "application/octet-stream")
-                return BadRequest($"Content-Type: {Request.ContentType} is not supported");
-
             if (!ValidationHelper.IsIdValid(id))
                 return BadRequest("Ошибка запроса при загрузке файла. Полученный при вызове CreateFile идентификатор загрузки файла некорректный.");
+
+            if (Request.ContentType != "application/octet-stream")
+                return BadRequest($"Content-Type: {Request.ContentType} is not supported");
 
             if (_memoryCache.TryGetValue<FileInfoApi>($"file{id}", out var fileInfo))
                 _memoryCache.Remove($"file{id}");
             else
-                fileInfo = await _repository.GetFileInfoByIdAsync(id, cancellationToken);
+                fileInfo = await _repository.GetFileInfoByIdAsync(Ulid.Parse(id));
 
+            if (fileInfo?.FileName == null && fileInfo?.Metadata == null)
+                return NotFound("Ошибка запроса при загрузке файла. Не найдено полученной при вызове CreateFile информации о файле.");
 
-            if (fileInfo?.FileName == null)
-                return NotFound("Что-то пошло не так.");
+            fileInfo.Metadata.FileStreamId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body);
 
-            var newFsId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body, cancellationToken);
-            await _repository.UpdateFileInfoAsync(id, newFsId);
-
-
-            return Ok();
+            return await _repository.TryUpdateAsync(fileInfo.Metadata) ? Ok(new { id = fileInfo.Metadata.SatelliteDataId }) : NotFound("Не удалось загрузить файл.");
         }
     }
 }

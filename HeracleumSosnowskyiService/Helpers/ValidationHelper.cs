@@ -6,7 +6,7 @@ namespace HeracleumSosnowskyiService.Helpers
     {
         public static bool IsIdValid(string? id)
         {
-            return ObjectId.TryParse(id, out _);
+            return Ulid.TryParse(id, out _);
         }
     }
 }

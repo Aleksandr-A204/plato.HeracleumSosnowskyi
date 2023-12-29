@@ -1,31 +1,30 @@
-using HeracleumSosnowskyiService.Interfaces;
+using HeracleumSosnowskyiService.Data.PostgreSQL;
 using HeracleumSosnowskyiService.MongoDb.Configuration;
-using HeracleumSosnowskyiService.MongoDb.Data;
 using HeracleumSosnowskyiService.Repositories;
 using HeracleumSosnowskyiService.Services;
-using HeracleumSosnowskyiService.Storage;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MongoDB.Driver;
+using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
-
-//// JSON Serializer
-//builder.Services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
-//.AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
 // Register services here
 builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSection(nameof(MongoDbConfiguration)));
 
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
-builder.Services.AddScoped<ISatelliteImagesDatasetRepository, SatelliteImagesDatasetRepository>();
+builder.Services.AddScoped<ISatelliteDataRepository, SatelliteDataRepository>();
 //builder.Services.AddScoped<ICachingService, CachingService>();
 builder.Services.AddScoped<IProcessService, ProcessService>();
 
-builder.Services.AddDbContext<>
+builder.Services.AddDbContext<PostgreSQLDbContext>(options => options.UseNpgsql("Host=localhost;Port=5432;Database=HeracleumSosnowskyi;Username=postgres;Password=admin"));
 
 builder.Services.AddMemoryCache();
 builder.Services.TryAdd(ServiceDescriptor.Scoped<IMemoryCache, MemoryCache>());
+
+// JSON Serializer
+builder.Services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
+.AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
 builder.Services.AddControllers();
 
