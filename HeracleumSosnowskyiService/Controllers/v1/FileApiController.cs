@@ -47,9 +47,9 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAll()
         {
-            IEnumerable<FileMetadata> metadata = await _repository.GetAllAsync();
+            IEnumerable<Datasets> datasets = await _repository.GetAllAsync();
 
-            return Ok(metadata);
+            return Ok(datasets);
         }
 
         [Description("Найдет файл по id и возвращает информацию о файле")]
@@ -77,13 +77,13 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         {
             var landsatPoductId = fileInfo.FileName?.Remove(fileInfo.FileName.Length - 10);
 
-            var metadata = new FileMetadata
+            var datasets = new Datasets
             {
                 FileInfo = fileInfo,
                 SatelliteData = await _repository.FindOrInsertAsync(landsatPoductId)
             };
 
-            if (await _repository.TryAddAsync(metadata))
+            if (await _repository.TryAddAsync(datasets))
                 _memoryCache.Set($"file{fileInfo.Id}", fileInfo, new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
@@ -116,12 +116,12 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             else
                 fileInfo = await _repository.GetFileInfoByIdAsync(Ulid.Parse(id));
 
-            if (fileInfo?.FileName == null && fileInfo?.Metadata == null)
+            if (fileInfo?.FileName == null && fileInfo?.Datasets == null)
                 return NotFound("Ошибка запроса при загрузке файла. Не найдено полученной при вызове CreateFile информации о файле.");
 
-            fileInfo.Metadata.FileStreamId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body);
+            fileInfo.Datasets.FileStreamId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body);
 
-            return await _repository.TryUpdateAsync(fileInfo.Metadata) ? Ok(new { id = fileInfo.Metadata.SatelliteDataId }) : NotFound("Не удалось загрузить файл.");
+            return await _repository.TryUpdateAsync(fileInfo.Datasets) ? Ok(new { id = fileInfo.Datasets.SatelliteDataId }) : NotFound("Не удалось загрузить файл.");
         }
     }
 }

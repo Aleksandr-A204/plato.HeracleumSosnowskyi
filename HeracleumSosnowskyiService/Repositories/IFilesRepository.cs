@@ -7,15 +7,13 @@ namespace HeracleumSosnowskyiService.Repositories
 {
     public interface IFilesRepository
     {
-        Task<IEnumerable<FileMetadata>> GetAllAsync();
+        Task<IEnumerable<Datasets>> GetAllAsync();
         Task<IEnumerable<FileInfoApi>> GetAllFileInfoAsync();
-        Task<bool> TryAddAsync(FileMetadata metadata);
+        Task<bool> TryAddAsync(Datasets datasets);
         Task<FileInfoApi> GetFileInfoByIdAsync(Ulid id);
         Task<bool> SaveAsync();
-        Task<bool> TryUpdateAsync(FileMetadata metadata);
+        Task<bool> TryUpdateAsync(Datasets datasets);
         Task<SatelliteDataOfSpacesystem> FindOrInsertAsync(string landsatProductId);
         Task<string> UploadFileStreamAsync(string filename, Stream source);
-        Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(string filename);
-
     }
 }

@@ -5,23 +5,11 @@
 namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialFileEarthsensing : Migration
+    public partial class InitialDbs : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "EarthRemoteSensingDates",
-                columns: table => new
-                {
-                    Id = table.Column<byte[]>(type: "bytea", nullable: false),
-                    LandsatProductId = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EarthRemoteSensingDates", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "FileInfo",
                 columns: table => new
@@ -29,8 +17,7 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
                     Id = table.Column<byte[]>(type: "bytea", nullable: false),
                     FileName = table.Column<string>(type: "text", nullable: false),
                     MimeType = table.Column<string>(type: "text", nullable: false),
-                    LastModified = table.Column<long>(type: "bigint", nullable: false),
-                    FileStreamId = table.Column<string>(type: "text", nullable: true)
+                    LastModified = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -38,54 +25,66 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FileMetadates",
+                name: "SatelliteData",
                 columns: table => new
                 {
                     Id = table.Column<byte[]>(type: "bytea", nullable: false),
-                    ErsDataId = table.Column<byte[]>(type: "bytea", nullable: false),
+                    LandsatProductId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SatelliteData", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Datasets",
+                columns: table => new
+                {
+                    Id = table.Column<byte[]>(type: "bytea", nullable: false),
+                    SatelliteDataId = table.Column<byte[]>(type: "bytea", nullable: false),
                     FileInfoId = table.Column<byte[]>(type: "bytea", nullable: false),
                     FileStreamId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FileMetadates", x => x.Id);
+                    table.PrimaryKey("PK_Datasets", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FileMetadates_EarthRemoteSensingDates_ErsDataId",
-                        column: x => x.ErsDataId,
-                        principalTable: "EarthRemoteSensingDates",
+                        name: "FK_Datasets_FileInfo_FileInfoId",
+                        column: x => x.FileInfoId,
+                        principalTable: "FileInfo",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FileMetadates_FileInfo_FileInfoId",
-                        column: x => x.FileInfoId,
-                        principalTable: "FileInfo",
+                        name: "FK_Datasets_SatelliteData_SatelliteDataId",
+                        column: x => x.SatelliteDataId,
+                        principalTable: "SatelliteData",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_FileMetadates_ErsDataId",
-                table: "FileMetadates",
-                column: "ErsDataId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FileMetadates_FileInfoId",
-                table: "FileMetadates",
+                name: "IX_Datasets_FileInfoId",
+                table: "Datasets",
                 column: "FileInfoId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Datasets_SatelliteDataId",
+                table: "Datasets",
+                column: "SatelliteDataId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "FileMetadates");
-
-            migrationBuilder.DropTable(
-                name: "EarthRemoteSensingDates");
+                name: "Datasets");
 
             migrationBuilder.DropTable(
                 name: "FileInfo");
+
+            migrationBuilder.DropTable(
+                name: "SatelliteData");
         }
     }
 }

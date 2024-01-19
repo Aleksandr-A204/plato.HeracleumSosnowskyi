@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
 {
     [DbContext(typeof(PostgreSQLDbContext))]
-    [Migration("20231228073232_InitialFileEarthsensing")]
-    partial class InitialFileEarthsensing
+    [Migration("20240119092711_InitialDbs")]
+    partial class InitialDbs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,17 +24,30 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("HeracleumSosnowskyiService.Models.EarthRemoteSensingData", b =>
+            modelBuilder.Entity("HeracleumSosnowskyiService.Models.Datasets", b =>
                 {
                     b.Property<byte[]>("Id")
                         .HasColumnType("bytea");
 
-                    b.Property<string>("LandsatProductId")
+                    b.Property<byte[]>("FileInfoId")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("FileStreamId")
                         .HasColumnType("text");
+
+                    b.Property<byte[]>("SatelliteDataId")
+                        .IsRequired()
+                        .HasColumnType("bytea");
 
                     b.HasKey("Id");
 
-                    b.ToTable("EarthRemoteSensingDates");
+                    b.HasIndex("FileInfoId")
+                        .IsUnique();
+
+                    b.HasIndex("SatelliteDataId");
+
+                    b.ToTable("Datasets");
                 });
 
             modelBuilder.Entity("HeracleumSosnowskyiService.Models.FileInfoApi", b =>
@@ -44,9 +57,6 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
 
                     b.Property<string>("FileName")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FileStreamId")
                         .HasColumnType("text");
 
                     b.Property<long>("LastModified")
@@ -61,59 +71,46 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
                     b.ToTable("FileInfo");
                 });
 
-            modelBuilder.Entity("HeracleumSosnowskyiService.Models.FileMetadata", b =>
+            modelBuilder.Entity("HeracleumSosnowskyiService.Models.SatelliteDataOfSpacesystem", b =>
                 {
                     b.Property<byte[]>("Id")
                         .HasColumnType("bytea");
 
-                    b.Property<byte[]>("ErsDataId")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<byte[]>("FileInfoId")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("FileStreamId")
+                    b.Property<string>("LandsatProductId")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ErsDataId");
-
-                    b.HasIndex("FileInfoId")
-                        .IsUnique();
-
-                    b.ToTable("FileMetadates");
+                    b.ToTable("SatelliteData");
                 });
 
-            modelBuilder.Entity("HeracleumSosnowskyiService.Models.FileMetadata", b =>
+            modelBuilder.Entity("HeracleumSosnowskyiService.Models.Datasets", b =>
                 {
-                    b.HasOne("HeracleumSosnowskyiService.Models.EarthRemoteSensingData", "EarthRemoteSensingData")
-                        .WithMany("Metadates")
-                        .HasForeignKey("ErsDataId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("HeracleumSosnowskyiService.Models.FileInfoApi", "FileInfo")
-                        .WithOne("Metadata")
-                        .HasForeignKey("HeracleumSosnowskyiService.Models.FileMetadata", "FileInfoId")
+                        .WithOne("Datasets")
+                        .HasForeignKey("HeracleumSosnowskyiService.Models.Datasets", "FileInfoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("EarthRemoteSensingData");
+                    b.HasOne("HeracleumSosnowskyiService.Models.SatelliteDataOfSpacesystem", "SatelliteData")
+                        .WithMany("Datasets")
+                        .HasForeignKey("SatelliteDataId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("FileInfo");
-                });
 
-            modelBuilder.Entity("HeracleumSosnowskyiService.Models.EarthRemoteSensingData", b =>
-                {
-                    b.Navigation("Metadates");
+                    b.Navigation("SatelliteData");
                 });
 
             modelBuilder.Entity("HeracleumSosnowskyiService.Models.FileInfoApi", b =>
                 {
-                    b.Navigation("Metadata");
+                    b.Navigation("Datasets");
+                });
+
+            modelBuilder.Entity("HeracleumSosnowskyiService.Models.SatelliteDataOfSpacesystem", b =>
+                {
+                    b.Navigation("Datasets");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,16 +1,20 @@
-﻿using HeracleumSosnowskyiService.Interfaces;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 
 namespace HeracleumSosnowskyiService.Models
 {
+    [DataContract]
     public class SatelliteDataOfSpacesystem 
     {
         [Key]
+        [DataMember(Name = "id")]
         public Ulid Id { get; } = Ulid.NewUlid();
 
+        [DataMember(Name = "landsatProductId")]
         public string? LandsatProductId { get; set; }
 
-        public ICollection<FileMetadata>? Metadata { get; set; } = new List<FileMetadata>();
+        [DataMember(Name = "datasets")]
+        public ICollection<Datasets>? Datasets { get; set; } = new List<Datasets>();
 
     }
 }

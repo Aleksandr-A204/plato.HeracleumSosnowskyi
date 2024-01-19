@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HeracleumSosnowskyiService.Models
 {
-    public class FileMetadata
+    public class Datasets
     {
         [Key]
         public Ulid Id { get; } = Ulid.NewUlid();

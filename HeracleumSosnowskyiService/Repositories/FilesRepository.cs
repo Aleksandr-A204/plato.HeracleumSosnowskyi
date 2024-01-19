@@ -20,25 +20,25 @@ namespace HeracleumSosnowskyiService.Repositories
 
         public IGridFSBucket GridFilesStream() => new GridFSBucket(Database);
 
-        public async Task<IEnumerable<FileMetadata>> GetAllAsync()
-            => await _context.FileMetadata.Include(x => x.FileInfo).Include(x => x.SatelliteData).ToListAsync();
+        public async Task<IEnumerable<Datasets>> GetAllAsync()
+            => await _context.Datasets.Include(x => x.FileInfo).Include(x => x.SatelliteData).ToListAsync();
 
         public async Task<IEnumerable<FileInfoApi>> GetAllFileInfoAsync() => await _context.FileInfo.ToListAsync();
 
-        public async Task<bool> TryAddAsync(FileMetadata metadata)
+        public async Task<bool> TryAddAsync(Datasets datasets)
         {
-            await _context.FileMetadata.AddAsync(metadata);
+            await _context.Datasets.AddAsync(datasets);
             return await SaveAsync();
         }
 
         public async Task<FileInfoApi> GetFileInfoByIdAsync(Ulid id) => await _context.FileInfo.Include(x 
-            => x.Metadata).FirstOrDefaultAsync(field => field.Id == id) ?? new FileInfoApi();
+            => x.Datasets).FirstOrDefaultAsync(field => field.Id == id) ?? new FileInfoApi();
 
         public async Task<bool> SaveAsync() => await _context.SaveChangesAsync() > 0;
 
-        public async Task<bool> TryUpdateAsync(FileMetadata metadata)
+        public async Task<bool> TryUpdateAsync(Datasets datasets)
         {
-            _context.Entry(metadata).State = EntityState.Modified;
+            _context.Entry(datasets).State = EntityState.Modified;
             return await SaveAsync();
         }
 
@@ -47,11 +47,5 @@ namespace HeracleumSosnowskyiService.Repositories
                 => field.LandsatProductId == landsatProductId) ?? new SatelliteDataOfSpacesystem { LandsatProductId = landsatProductId };
 
         public async Task<string> UploadFileStreamAsync(string filename, Stream source) => (await GridFilesStream().UploadFromStreamAsync(filename, source)).ToString();
-
-        public async Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(string filename)
-        {
-            return await GridFilesStream().OpenDownloadStreamByNameAsync(filename);
-            // return await GridFilesStream().OpenDownloadStreamAsync(fileId);
-        }
     }
 }
