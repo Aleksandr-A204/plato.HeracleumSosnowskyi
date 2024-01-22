@@ -12,12 +12,12 @@ namespace HeracleumSosnowskyiService.Controllers.v1
     public class AreasDetectionController : Controller
     {
         private readonly IProcessService _process;
-        private readonly ISatelliteDataRepository _repository;
+        private readonly IDatasetsRepository _repository;
 
-        public AreasDetectionController(IProcessService process, ISatelliteDataRepository repository)
+        public AreasDetectionController(IProcessService process, IDatasetsRepository repository)
         {
             _process = process ?? throw new ArgumentNullException(nameof(process), $"The {nameof(ProcessService)} cannot be NULL.");
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository), $"The {nameof(FilesRepository)} cannot be NULL.");
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository), $"The {nameof(DatasetsRepository)} cannot be NULL.");
         }
 
         [HttpGet]
@@ -25,9 +25,9 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Get()
         {
-            var satellitesData = await _repository.GetAllAsync();
+            var datasets = await _repository.GetAllAsync();
 
-            return Ok(satellitesData);
+            return Ok(datasets);
         }
 
         [Description("Рассчитает индекс борщевика Сосновского по формуле Рыжикова, затем получит шейп-файл(shapefile)")]
@@ -42,20 +42,25 @@ namespace HeracleumSosnowskyiService.Controllers.v1
 
             var satelliteData = await _repository.GetByIdAsync(Ulid.Parse(id));
 
-            var dirPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent;
-            var subdirPath = Path.Combine(dirPath.FullName, "SatelliteImages");
+            //var dirPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent;
+            //var subdirPath = Path.Combine(dirPath.FullName, "SatelliteImages");
 
-            if (!Directory.Exists(subdirPath))
-                dirPath.CreateSubdirectory("SatelliteImages");
+            //if (!Directory.Exists(subdirPath))
+            //    dirPath.CreateSubdirectory("SatelliteImages");
 
-            subdirPath = Path.Combine(subdirPath, satelliteData.LandsatProductId);
+            //subdirPath = Path.Combine(subdirPath, satelliteData.LandsatProductId);
 
-            if (!Directory.Exists(subdirPath))
-                dirPath.CreateSubdirectory($"SatelliteImages\\{satelliteData.LandsatProductId}");
+            //if (!Directory.Exists(subdirPath))
+            //    dirPath.CreateSubdirectory($"SatelliteImages\\{satelliteData.LandsatProductId}");
 
             //foreach (var dataset in satelliteData.Datasets)
             //{
             //    var inputFileStream = await _repository.DouwloadFileStreamAsync(ObjectId.Parse(dataset.FileStreamId));
+
+            //    var path = Path.Combine(subdirPath, inputFileStream.FileInfo.Filename);
+
+            //    if (System.IO.File.Exists(path))
+            //        continue;
 
             //    using (var outputFileStream = new FileStream(Path.Combine(subdirPath, inputFileStream.FileInfo.Filename), FileMode.Create))
             //    {
@@ -63,9 +68,9 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             //    }
             //}
 
-            await _process.RunCmdLineAsync(subdirPath);
+            //await _process.RunCmdLineAsync(subdirPath);
 
-            return Ok();
+            return Ok(satelliteData);
         }
     }
 }

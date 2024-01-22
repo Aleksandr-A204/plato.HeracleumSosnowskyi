@@ -20,23 +20,23 @@ namespace HeracleumSosnowskyiService.Repositories
 
         public IGridFSBucket GridFilesStream() => new GridFSBucket(Database);
 
-        public async Task<IEnumerable<Datasets>> GetAllAsync()
+        public async Task<IEnumerable<Dataset>> GetAllAsync()
             => await _context.Datasets.Include(x => x.FileInfo).Include(x => x.SatelliteData).ToListAsync();
 
         public async Task<IEnumerable<FileInfoApi>> GetAllFileInfoAsync() => await _context.FileInfo.ToListAsync();
 
-        public async Task<bool> TryAddAsync(Datasets datasets)
+        public async Task<bool> TryAddAsync(Dataset datasets)
         {
             await _context.Datasets.AddAsync(datasets);
             return await SaveAsync();
         }
 
-        public async Task<FileInfoApi> GetFileInfoByIdAsync(Ulid id) => await _context.FileInfo.Include(x 
-            => x.Datasets).FirstOrDefaultAsync(field => field.Id == id) ?? new FileInfoApi();
+        public async Task<FileInfoApi> GetFileInfoByIdAsync(Ulid id) => 
+            await _context.FileInfo.Include(x => x.Datasets).FirstOrDefaultAsync(field => field.Id == id) ?? new FileInfoApi();
 
         public async Task<bool> SaveAsync() => await _context.SaveChangesAsync() > 0;
 
-        public async Task<bool> TryUpdateAsync(Datasets datasets)
+        public async Task<bool> TryUpdateAsync(Dataset datasets)
         {
             _context.Entry(datasets).State = EntityState.Modified;
             return await SaveAsync();

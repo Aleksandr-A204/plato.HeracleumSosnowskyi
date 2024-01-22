@@ -9,6 +9,6 @@ echo %cd%
 IF EXIST %1 (
 	for /F "usebackq" %%a in (`dir /D /B`) do (
 		echo %%a
-		saga_cmd io_gdal 0 -FILES="%%a" -GRIDS="%%a.sgrd"
+		REM saga_cmd io_gdal 0 -FILES="%%a" -GRIDS="%%a.sgrd"
 	)
 )
