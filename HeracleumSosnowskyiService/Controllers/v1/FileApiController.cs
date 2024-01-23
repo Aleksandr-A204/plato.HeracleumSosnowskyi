@@ -40,18 +40,6 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             return Ok(filesInfo);
         }
 
-        //[HttpGet]
-        //[Produces("application/json")]
-        //[Route("dataset")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> GetAll()
-        //{
-        //    IEnumerable<Dataset> datasets = await _repository.GetAllAsync();
-
-        //    return Ok(datasets);
-        //}
-
         [Description("Найдет файл по id и возвращает информацию о файле")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]

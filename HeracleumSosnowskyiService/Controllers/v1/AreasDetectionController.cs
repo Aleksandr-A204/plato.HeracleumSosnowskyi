@@ -57,22 +57,22 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             if (!Directory.Exists(subdirPath))
                 dirPath.CreateSubdirectory($"SatelliteImages\\{satelliteData.LandsatProductId}");
 
-            //foreach (var dataset in satelliteData.Datasets)
-            //{
-            //    var inputFileStream = await _repository.DouwloadFileStreamAsync(ObjectId.Parse(dataset.FileStreamId));
+            foreach (var dataset in satelliteData.Datasets)
+            {
+                var inputFileStream = await _repository.DouwloadFileStreamAsync(ObjectId.Parse(dataset.FileStreamId));
 
-            //    var path = Path.Combine(subdirPath, inputFileStream.FileInfo.Filename);
+                var path = Path.Combine(subdirPath, inputFileStream.FileInfo.Filename);
 
-            //    if (System.IO.File.Exists(path))
-            //        continue;
+                if (System.IO.File.Exists(path))
+                    continue;
 
-            //    using (var outputFileStream = new FileStream(Path.Combine(subdirPath, inputFileStream.FileInfo.Filename), FileMode.Create))
-            //    {
-            //        inputFileStream.CopyTo(outputFileStream);
-            //    }
-            //}
+                using (var outputFileStream = new FileStream(Path.Combine(subdirPath, inputFileStream.FileInfo.Filename), FileMode.Create))
+                {
+                    inputFileStream.CopyTo(outputFileStream);
+                }
+            }
 
-            //await _process.RunCmdLineAsync(subdirPath);
+            await _process.RunCmdLineAsync(subdirPath);
 
             return Ok(satelliteData);
         }
