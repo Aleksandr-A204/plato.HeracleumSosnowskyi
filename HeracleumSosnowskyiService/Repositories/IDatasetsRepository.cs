@@ -6,8 +6,9 @@ namespace HeracleumSosnowskyiService.Repositories
 {
     public interface IDatasetsRepository
     {
-        Task<IEnumerable<Dataset>> GetAllAsync();
-        Task<Dataset> GetByIdAsync(Ulid id);
+        Task<IEnumerable<SatelliteDataOfSpacesystem>> GetSatellitesDataAsync();
+        Task<IEnumerable<Dataset>> GetDatasetsBySatelliteDataIdAsync(Ulid id);
+        Task<SatelliteDataOfSpacesystem> GetByIdAsync(Ulid id);
         Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(ObjectId fileId);
     }
 }

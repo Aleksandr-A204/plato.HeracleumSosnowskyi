@@ -20,10 +20,13 @@ namespace HeracleumSosnowskyiService.Repositories
 
         public IGridFSBucket GridFilesStream() => new GridFSBucket(Database);
 
-        public async Task<IEnumerable<Dataset>> GetAllAsync() => await _context.Datasets.ToListAsync();
+        public async Task<IEnumerable<SatelliteDataOfSpacesystem>> GetSatellitesDataAsync() => await _context.SatelliteData.ToListAsync();
 
-        public async Task<Dataset> GetByIdAsync(Ulid id) =>
-            await _context.Datasets.FirstOrDefaultAsync(s => s.Id == id) ?? new();
+        public async Task<IEnumerable<Dataset>> GetDatasetsBySatelliteDataIdAsync(Ulid id) =>
+            await _context.Datasets.Where(field => field.SatelliteDataId == id).ToArrayAsync();
+
+        public async Task<SatelliteDataOfSpacesystem> GetByIdAsync(Ulid id) =>
+            await _context.SatelliteData.Include(field => field.Datasets).FirstOrDefaultAsync(s => s.Id == id) ?? new();
 
         public async Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(ObjectId fileId) => await GridFilesStream().OpenDownloadStreamAsync(fileId);
 

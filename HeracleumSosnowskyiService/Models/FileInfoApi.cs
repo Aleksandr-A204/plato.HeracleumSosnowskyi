@@ -18,6 +18,6 @@ namespace HeracleumSosnowskyiService.Models
 
         public long LastModified { get; set; } = 0;
 
-        public Datasets? Datasets { get; set; }
+        public Dataset? Datasets { get; set; }
     }
 }

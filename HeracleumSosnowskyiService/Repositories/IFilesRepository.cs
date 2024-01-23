@@ -7,7 +7,6 @@ namespace HeracleumSosnowskyiService.Repositories
 {
     public interface IFilesRepository
     {
-        Task<IEnumerable<Dataset>> GetAllAsync();
         Task<IEnumerable<FileInfoApi>> GetAllFileInfoAsync();
         Task<bool> TryAddAsync(Dataset datasets);
         Task<FileInfoApi> GetFileInfoByIdAsync(Ulid id);

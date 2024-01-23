@@ -14,7 +14,7 @@ namespace HeracleumSosnowskyiService.Models
         public string? LandsatProductId { get; set; }
 
         [DataMember(Name = "datasets")]
-        public ICollection<Datasets>? Datasets { get; set; } = new List<Datasets>();
+        public ICollection<Dataset>? Datasets { get; set; } = new List<Dataset>();
 
     }
 }

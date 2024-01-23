@@ -23,11 +23,11 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetSatellitesData()
         {
-            var datasets = await _repository.GetAllAsync();
+            var satellitesData = await _repository.GetSatellitesDataAsync();
 
-            return Ok(datasets);
+            return Ok(satellitesData);
         }
 
         [Description("Рассчитает индекс борщевика Сосновского по формуле Рыжикова, затем получит шейп-файл(shapefile)")]
@@ -35,23 +35,27 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         [Route("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> StartCalculate([Description("Идентификатор")] string id)
+        public async Task<IActionResult> StartCalculate(
+            [Description("Идентификатор спутниковых данных полученный при при вызове Upload или GetSatellitesData")] string id
+            )
         {
             if (!ValidationHelper.IsIdValid(id))
-                return BadRequest("Ошибка запроса при обнаружении зоны произрастания БС. Полученный при вызове Upload идентификатор спутниковых данных некорректный.");
+                return BadRequest("Ошибка запроса при обнаружении зоны произрастания БС. Идентификатор спутниковых данных некорректный.");
 
             var satelliteData = await _repository.GetByIdAsync(Ulid.Parse(id));
 
-            //var dirPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent;
-            //var subdirPath = Path.Combine(dirPath.FullName, "SatelliteImages");
+            //var datasets = await _repository.GetDatasetsBySatelliteDataIdAsync(Ulid.Parse(id));
 
-            //if (!Directory.Exists(subdirPath))
-            //    dirPath.CreateSubdirectory("SatelliteImages");
+            var dirPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent;
+            var subdirPath = Path.Combine(dirPath.FullName, "SatelliteImages");
 
-            //subdirPath = Path.Combine(subdirPath, satelliteData.LandsatProductId);
+            if (!Directory.Exists(subdirPath))
+                dirPath.CreateSubdirectory("SatelliteImages");
 
-            //if (!Directory.Exists(subdirPath))
-            //    dirPath.CreateSubdirectory($"SatelliteImages\\{satelliteData.LandsatProductId}");
+            subdirPath = Path.Combine(subdirPath, satelliteData.LandsatProductId);
+
+            if (!Directory.Exists(subdirPath))
+                dirPath.CreateSubdirectory($"SatelliteImages\\{satelliteData.LandsatProductId}");
 
             //foreach (var dataset in satelliteData.Datasets)
             //{

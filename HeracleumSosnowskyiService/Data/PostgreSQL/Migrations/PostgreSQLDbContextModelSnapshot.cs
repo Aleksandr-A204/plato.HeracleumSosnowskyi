@@ -44,7 +44,7 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
 
                     b.HasIndex("SatelliteDataId");
 
-                    b.ToTable("Datasets");
+                    b.ToTable("Datasets", (string)null);
                 });
 
             modelBuilder.Entity("HeracleumSosnowskyiService.Models.FileInfoApi", b =>
@@ -65,7 +65,7 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FileInfo");
+                    b.ToTable("FileInfo", (string)null);
                 });
 
             modelBuilder.Entity("HeracleumSosnowskyiService.Models.SatelliteDataOfSpacesystem", b =>
@@ -78,7 +78,7 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SatelliteData");
+                    b.ToTable("SatelliteData", (string)null);
                 });
 
             modelBuilder.Entity("HeracleumSosnowskyiService.Models.Datasets", b =>

@@ -25,7 +25,6 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         }
 
         [HttpGet]
-        [Route("fileinfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetFileInfoAll()
@@ -41,16 +40,17 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             return Ok(filesInfo);
         }
 
-        [HttpGet]
-        [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAll()
-        {
-            IEnumerable<Datasets> datasets = await _repository.GetAllAsync();
+        //[HttpGet]
+        //[Produces("application/json")]
+        //[Route("dataset")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> GetAll()
+        //{
+        //    IEnumerable<Dataset> datasets = await _repository.GetAllAsync();
 
-            return Ok(datasets);
-        }
+        //    return Ok(datasets);
+        //}
 
         [Description("Найдет файл по id и возвращает информацию о файле")]
         [HttpGet("{id}")]
@@ -77,7 +77,7 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         {
             var landsatPoductId = fileInfo.FileName?.Remove(fileInfo.FileName.Length - 10);
 
-            var datasets = new Datasets
+            var datasets = new Dataset
             {
                 FileInfo = fileInfo,
                 SatelliteData = await _repository.FindOrInsertAsync(landsatPoductId)
@@ -95,7 +95,7 @@ namespace HeracleumSosnowskyiService.Controllers.v1
             return CreatedAtAction(nameof(GetById), new { id = fileInfo.Id }, new { fileId = fileInfo.Id });
         }
 
-        [Description("Загружает файл и возвращает идентификатор для обнаружения зоны произрастения Борщевик сосновского.")]
+        [Description("Загружает файл и возвращает идентификатор спутниковых данных для обнаружения зоны произрастения Борщевик сосновского.")]
         [HttpPut]
         [Consumes("application/octet-stream")]
         [Route("upload/{id}")]

@@ -14,6 +14,7 @@ builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSectio
 
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
 builder.Services.AddScoped<ISatelliteDataRepository, SatelliteDataRepository>();
+builder.Services.AddScoped<IDatasetsRepository, DatasetsRepository>();
 //builder.Services.AddScoped<ICachingService, CachingService>();
 builder.Services.AddScoped<IProcessService, ProcessService>();
 
