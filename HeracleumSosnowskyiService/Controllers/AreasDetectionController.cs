@@ -93,6 +93,10 @@ namespace HeracleumSosnowskyiService.Controllers
             await _process.RunCmdLineAsync(subdirPath);
 
 
+
+
+
+
             return Ok();
         }
     }
