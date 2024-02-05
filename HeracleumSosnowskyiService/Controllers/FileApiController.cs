@@ -7,7 +7,7 @@ using MongoDB.Driver;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace HeracleumSosnowskyiService.Controllers.v1
+namespace HeracleumSosnowskyiService.Controllers
 {
     [ApiController]
     [Route("[controller]")]

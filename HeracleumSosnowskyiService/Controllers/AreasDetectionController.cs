@@ -2,10 +2,12 @@
 using HeracleumSosnowskyiService.Repositories;
 using HeracleumSosnowskyiService.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using MongoDB.Bson;
 using System.ComponentModel;
+using System.Diagnostics;
 
-namespace HeracleumSosnowskyiService.Controllers.v1
+namespace HeracleumSosnowskyiService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
@@ -13,11 +15,13 @@ namespace HeracleumSosnowskyiService.Controllers.v1
     {
         private readonly IProcessService _process;
         private readonly IDatasetsRepository _repository;
+        private readonly IMemoryCache _memoryCache;
 
-        public AreasDetectionController(IProcessService process, IDatasetsRepository repository)
+        public AreasDetectionController(IProcessService process, IDatasetsRepository repository, IMemoryCache memory)
         {
             _process = process ?? throw new ArgumentNullException(nameof(process), $"The {nameof(ProcessService)} cannot be NULL.");
             _repository = repository ?? throw new ArgumentNullException(nameof(repository), $"The {nameof(DatasetsRepository)} cannot be NULL.");
+            _memoryCache = memory ?? throw new ArgumentNullException(nameof(memory), $"The {nameof(MemoryCache)} cannot be NULL.");
         }
 
         [HttpGet]
@@ -35,7 +39,7 @@ namespace HeracleumSosnowskyiService.Controllers.v1
         [Route("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> StartCalculate(
+        public async Task<IActionResult> Post(
             [Description("Идентификатор спутниковых данных полученный при при вызове Upload или GetSatellitesData")] string id
             )
         {
@@ -72,9 +76,24 @@ namespace HeracleumSosnowskyiService.Controllers.v1
                 }
             }
 
-            await _process.RunCmdLineAsync(subdirPath);
+            _memoryCache.Set("subdirPath", subdirPath, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            });
 
             return Ok(satelliteData);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> StartCalculate()
+        {
+            if (!_memoryCache.TryGetValue<string>("subdirPath", out var subdirPath))
+                return NotFound();
+
+            await _process.RunCmdLineAsync(subdirPath);
+
+
+            return Ok();
         }
     }
 }

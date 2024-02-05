@@ -18,7 +18,7 @@ builder.Services.AddScoped<IDatasetsRepository, DatasetsRepository>();
 //builder.Services.AddScoped<ICachingService, CachingService>();
 builder.Services.AddScoped<IProcessService, ProcessService>();
 
-builder.Services.AddDbContext<PostgreSQLDbContext>(options => options.UseNpgsql("Host=localhost;Port=5432;Database=HeracleumSosnowskyi;Username=postgres;Password=admin"));
+builder.Services.AddDbContext<PostgreSQLDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddMemoryCache();
 builder.Services.TryAdd(ServiceDescriptor.Scoped<IMemoryCache, MemoryCache>());
