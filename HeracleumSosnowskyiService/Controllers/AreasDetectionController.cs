@@ -76,10 +76,12 @@ namespace HeracleumSosnowskyiService.Controllers
                 }
             }
 
-            _memoryCache.Set("subdirPath", subdirPath, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            });
+            //_memoryCache.Set("subdirPath", subdirPath, new MemoryCacheEntryOptions
+            //{
+            //    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            //});
+
+            _memoryCache.Set("subdirPath", subdirPath);
 
             return Ok(satelliteData);
         }
@@ -91,11 +93,6 @@ namespace HeracleumSosnowskyiService.Controllers
                 return NotFound();
 
             await _process.RunCmdLineAsync(subdirPath);
-
-
-
-
-
 
             return Ok();
         }
