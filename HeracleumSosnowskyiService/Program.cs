@@ -21,7 +21,7 @@ builder.Services.AddScoped<IProcessService, ProcessService>();
 builder.Services.AddDbContext<PostgreSQLDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddMemoryCache();
-builder.Services.TryAdd(ServiceDescriptor.Scoped<IMemoryCache, MemoryCache>());
+//builder.Services.TryAdd(ServiceDescriptor.Scoped<IMemoryCache, MemoryCache>());
 
 // JSON Serializer
 builder.Services.AddControllersWithViews().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
@@ -29,7 +29,7 @@ builder.Services.AddControllersWithViews().AddNewtonsoftJson(options => options.
 
 builder.Services.AddControllers();
 
-// Enable CORS
+// Enable CORS http://localhost:5173
 builder.Services.AddCors(option => option.AddPolicy(name: "myAllowSpecificOrigins", builder =>
     builder.WithOrigins("http://localhost:5173").AllowAnyMethod().AllowAnyHeader()));
 
