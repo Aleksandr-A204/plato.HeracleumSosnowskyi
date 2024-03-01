@@ -7,7 +7,7 @@ namespace HeracleumSosnowskyiService.Services
         public async Task RunCmdLineAsync(string arguments)
         {
             // Populate process information
-            var processInfo = new ProcessStartInfo("cmd.exe", $"/c test.bat \"{arguments}\"");
+            var processInfo = new ProcessStartInfo("cmd.exe", $"/c saga_runs_calc.bat \"{arguments}\"");
 
             processInfo.CreateNoWindow = true;
             processInfo.UseShellExecute = false;
@@ -16,7 +16,7 @@ namespace HeracleumSosnowskyiService.Services
 
             var process = Process.Start(processInfo);
 
-            Console.WriteLine("Started process PID: " + process.Id);
+            Console.WriteLine("Started process PID: " + process?.Id);
 
             process.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
                 Console.WriteLine("output >> " + e.Data);

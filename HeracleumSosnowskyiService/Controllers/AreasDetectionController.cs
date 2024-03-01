@@ -48,8 +48,6 @@ namespace HeracleumSosnowskyiService.Controllers
 
             var satelliteData = await _repository.GetByIdAsync(Ulid.Parse(id));
 
-            //var datasets = await _repository.GetDatasetsBySatelliteDataIdAsync(Ulid.Parse(id));
-
             var dirPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent;
             var subdirPath = Path.Combine(dirPath.FullName, "SatelliteImages");
 
@@ -76,12 +74,10 @@ namespace HeracleumSosnowskyiService.Controllers
                 }
             }
 
-            //_memoryCache.Set("subdirPath", subdirPath, new MemoryCacheEntryOptions
-            //{
-            //    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            //});
-
-            _memoryCache.Set("subdirPath", subdirPath);
+            _memoryCache.Set("subdirPath", subdirPath, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            });
 
             return Ok(satelliteData);
         }
@@ -90,7 +86,10 @@ namespace HeracleumSosnowskyiService.Controllers
         public async Task<IActionResult> StartCalculate()
         {
             if (!_memoryCache.TryGetValue<string>("subdirPath", out var subdirPath))
-                return NotFound();
+                return NotFound("Subdir path isn't not found.");
+
+            if(subdirPath == null)
+                return NotFound("Subdir path isn't not found.");
 
             await _process.RunCmdLineAsync(subdirPath);
 

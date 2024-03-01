@@ -3,8 +3,6 @@ using HeracleumSosnowskyiService.MongoDb.Configuration;
 using HeracleumSosnowskyiService.Repositories;
 using HeracleumSosnowskyiService.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);

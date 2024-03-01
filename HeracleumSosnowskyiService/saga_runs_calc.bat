@@ -62,3 +62,9 @@ IF NOT EXIST "%~1\%~n1_SPLI.shp" saga_cmd shapes_grid 6 ^
  -CLASS_ALL="0" ^
  -CLASS_ID="1" ^
  -SPLIT="1"
+ 
+ REM IF NOT EXIST "%~1\%~n1_TEST.shp" saga_cmd shapes_grid 6 ^
+ REM -GRID="%~1\%~n1_SR_B2.TIF.sgrd" ^
+ REM -POLYGONS="%~1\%~n1_TEST.shp" ^
+ REM -CLASS_ALL="1" ^
+ REM -SPLIT="1"
