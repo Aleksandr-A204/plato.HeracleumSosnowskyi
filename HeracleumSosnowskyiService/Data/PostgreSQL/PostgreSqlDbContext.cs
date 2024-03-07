@@ -1,6 +1,7 @@
 ﻿using HeracleumSosnowskyiService.Extensions;
 using HeracleumSosnowskyiService.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HeracleumSosnowskyiService.Data.PostgreSQL
 {

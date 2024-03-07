@@ -16,8 +16,6 @@ namespace HeracleumSosnowskyiService.Services
 
             var process = Process.Start(processInfo);
 
-            Console.WriteLine("Started process PID: " + process?.Id);
-
             process.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
                 Console.WriteLine("output >> " + e.Data);
             process.BeginOutputReadLine();
