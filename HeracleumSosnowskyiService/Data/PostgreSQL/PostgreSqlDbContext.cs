@@ -23,11 +23,11 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL
                     if (ulidProperty.PropertyType == typeof(Ulid))
                         modelBuilder.Entity(entityType.ClrType)
                             .Property<Ulid>(ulidProperty.Name)
-                            .HasConversion<UlidToBytesConverter>();
+                            .HasConversion<UlidToStringConverter>();
                     else
                         modelBuilder.Entity(entityType.ClrType)
                             .Property<Ulid?>(ulidProperty.Name)
-                            .HasConversion<UlidToBytesConverter>();
+                            .HasConversion<UlidToStringConverter>();
         }
     }
 }

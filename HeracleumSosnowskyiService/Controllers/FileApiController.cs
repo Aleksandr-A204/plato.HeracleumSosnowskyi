@@ -1,5 +1,6 @@
 ﻿using HeracleumSosnowskyiService.Helpers;
 using HeracleumSosnowskyiService.Models;
+using HeracleumSosnowskyiService.RasterInfo;
 using HeracleumSosnowskyiService.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -24,23 +25,23 @@ namespace HeracleumSosnowskyiService.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetFileInfoAll()
-        {
-            if (!_memoryCache.TryGetValue<IEnumerable<FileInfoApi>>("filesInfo", out var filesInfo))
-            {
-                filesInfo = await _repository.GetAllFileInfoAsync();
-                _memoryCache.Set($"filesInfo", filesInfo, new MemoryCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)
-                });
-            }
-            return Ok(filesInfo);
-        }
+        //[HttpGet]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> GetFileInfoAll()
+        //{
+        //    if (!_memoryCache.TryGetValue<IEnumerable<FileInfoApi>>("filesInfo", out var filesInfo))
+        //    {
+        //        filesInfo = await _repository.GetAllFileInfoAsync();
+        //        _memoryCache.Set($"filesInfo", filesInfo, new MemoryCacheEntryOptions
+        //        {
+        //            AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)
+        //        });
+        //    }
+        //    return Ok(filesInfo);
+        //}
 
-        [Description("Найдет файл по id и возвращает информацию о файле")]
+        [Description("Находит файл по id и возвращает информацию о файле")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
@@ -56,22 +57,14 @@ namespace HeracleumSosnowskyiService.Controllers
             return fileInfo != null ? Ok(fileInfo) : NotFound("Ошибка репозитории при получении файла по индентификатору id. Не найдено информации о файле.");
         }
 
-        [Description("Создает новый файл и возвращает идентификатор для загрузки на сервер")]
+        [Description("Создавает новый файл и возвращает идентификатор для загрузки на сервер")]
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateFile([FromBody] FileInfoApi fileInfo)
         {
-            var landsatPoductId = fileInfo.FileName?.Remove(fileInfo.FileName.Length - 10);
-
-            var datasets = new Dataset
-            {
-                FileInfo = fileInfo,
-                SatelliteData = await _repository.FindOrInsertAsync(landsatPoductId)
-            };
-
-            if (await _repository.TryAddAsync(datasets))
+            if (await _repository.TryAddAsync(fileInfo))
                 _memoryCache.Set($"file{fileInfo.Id}", fileInfo, new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
@@ -110,6 +103,23 @@ namespace HeracleumSosnowskyiService.Controllers
             fileInfo.Datasets.FileStreamId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body);
 
             return await _repository.TryUpdateAsync(fileInfo.Datasets) ? Ok(new { id = fileInfo.Datasets.SatelliteDataId }) : NotFound("Не удалось загрузить файл.");
+        }
+
+        [Description("")]
+        [HttpPut]
+        [Route("readXml/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Read(
+            [Description("")] string id
+        )
+        {
+            if (!ValidationHelper.IsIdValid(id))
+                return BadRequest("Ошибка запроса при загрузке файла. Полученный при вызове CreateFile идентификатор загрузки файла некорректный.");
+
+            fileInfo.Datasets.FileStreamId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body);
+
+            return Ok();
         }
     }
 }

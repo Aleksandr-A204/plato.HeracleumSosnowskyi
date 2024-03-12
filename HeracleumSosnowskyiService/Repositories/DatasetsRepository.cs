@@ -28,7 +28,7 @@ namespace HeracleumSosnowskyiService.Repositories
         public async Task<SatelliteDataOfSpacesystem> GetByIdAsync(Ulid id) =>
             await _context.SatelliteData.Include(field => field.Datasets).FirstOrDefaultAsync(s => s.Id == id) ?? new();
 
-        public async Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(ObjectId fileId) => await GridFilesStream().OpenDownloadStreamAsync(fileId);
-
+        public async Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(ObjectId fileId) 
+            => await GridFilesStream().OpenDownloadStreamAsync(fileId);
     }
 }

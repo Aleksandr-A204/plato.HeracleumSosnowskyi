@@ -25,9 +25,9 @@ namespace HeracleumSosnowskyiService.Repositories
 
         public async Task<IEnumerable<FileInfoApi>> GetAllFileInfoAsync() => await _context.FileInfo.ToListAsync();
 
-        public async Task<bool> TryAddAsync(Dataset datasets)
+        public async Task<bool> TryAddAsync(FileInfoApi fileInfo)
         {
-            await _context.Datasets.AddAsync(datasets);
+            await _context.FileInfo.AddAsync(fileInfo);
             return await SaveAsync();
         }
 
@@ -46,6 +46,7 @@ namespace HeracleumSosnowskyiService.Repositories
             => await _context.SatelliteData.FirstOrDefaultAsync(field 
                 => field.LandsatProductId == landsatProductId) ?? new SatelliteDataOfSpacesystem { LandsatProductId = landsatProductId };
 
-        public async Task<string> UploadFileStreamAsync(string filename, Stream source) => (await GridFilesStream().UploadFromStreamAsync(filename, source)).ToString();
+        public async Task<string> UploadFileStreamAsync(string filename, Stream source) 
+            => (await GridFilesStream().UploadFromStreamAsync(filename, source)).ToString();
     }
 }

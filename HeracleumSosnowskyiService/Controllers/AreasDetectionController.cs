@@ -93,7 +93,7 @@ namespace HeracleumSosnowskyiService.Controllers
             if(subdirPath == null)
                 return NotFound("Subdir path isn't not found.");
 
-            await _process.RunCmdLineAsync(subdirPath);
+            await _process.RunCmdLineAsync(subdirPath, Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "net8.0"));
 
             return Ok();
         }

@@ -2,7 +2,7 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 REM Добавим SAGA_GIS в системную переменную среды.
-REM SET path=%path%;C:\Program Files\SAGA-GIS
+SET path=%path%C:\Program Files\SAGA-GIS-9.2.1
 
 PUSHD %1
 IF ERRORLEVEL 1 GOTO :eof
@@ -47,7 +47,8 @@ IF NOT EXIST "%SPLI_SGRD%" saga_cmd grid_calculus 1 ^
 IF NOT EXIST "%SPLI_TIF%" saga_cmd io_gdal 2 ^
  -GRIDS="%SPLI_SGRD%" ^
  -FILE="%SPLI_TIF%"
- 
+
+REM Convert of raster to vector.
 IF NOT EXIST "%~n1_POLYGONS.shp" saga_cmd shapes_grid 6 ^
  -GRID="%SPLI_SGRD%" ^
  -POLYGONS="%~n1_POLYGONS.shp" ^
@@ -55,6 +56,7 @@ IF NOT EXIST "%~n1_POLYGONS.shp" saga_cmd shapes_grid 6 ^
  -CLASS_ID="1" ^
  -SPLIT="1"
 
+REM Add of area to shp-file.
 IF NOT EXIST "%~n1_PROPS.shp" saga_cmd shapes_polygons 2 ^
 -POLYGONS "%~n1_POLYGONS.shp" ^
 -OUTPUT "%~n1_PROPS.shp" ^
@@ -63,18 +65,24 @@ IF NOT EXIST "%~n1_PROPS.shp" saga_cmd shapes_polygons 2 ^
 -BAREA 1
 
 REM The ID field is enumerable.
-IF NOT EXIST "%~n1_ENUM.shp" saga_cmd table_tools 2 ^
+IF NOT EXIST "%~n1_ENUM.shp" saga_cmd table_tools 21 ^
 -INPUT "%~n1_PROPS.shp" ^
 -ENUM ID ^
--RESULT_SHAPES "%~n1_ENUM.shp"
-
-REM IF NOT EXIST "%~n1_RPL.shp" saga_cmd table_tools 10 ^
-REM -TABLE "%~n1_ENUM.shp" ^
-REM -FIELD "NAME" ^
-REM -OUT_SHAPES "%~n1_RPL.shp" ^
-REM -REPLACE "TBL_OF_ATTRS_FOR_RPL.dbf"
+-OUTPUT "%~n1_ENUM.shp"
 
 IF NOT EXIST "%~n1_PARAMS.shp" saga_cmd shapes_grid 1 ^
 -SHAPES "%~n1_ENUM.shp" ^
 -GRIDS "%files%" ^
 -RESULT "%~n1_PARAMS.shp"
+
+IF NOT EXIST "%~n1_RPL.shp" saga_cmd table_tools 10 ^
+-TABLE "%~n1_PARAMS.shp" ^
+-FIELD NAME ^
+-OUT_SHAPES "%~n1_RPL.shp" ^
+-REPLACE "%~2\Attributes.Replace.csv"
+
+IF NOT EXIST "%~n1_OUT.shp" saga_cmd table_tools 25 ^
+-TABLE "%~n1_RPL.shp" ^
+-RESULT "%~n1_OUT.shp" ^
+-FIELD NAME ^
+-FORMAT "string(NAME) + integer(ID)"

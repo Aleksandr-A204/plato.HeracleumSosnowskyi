@@ -2,6 +2,6 @@
 {
     public interface IProcessService
     {
-        Task RunCmdLineAsync(string argumets);
+        Task RunCmdLineAsync(string argumets, string secondarcument);
     }
 }
