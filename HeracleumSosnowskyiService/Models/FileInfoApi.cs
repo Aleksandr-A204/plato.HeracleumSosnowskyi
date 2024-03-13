@@ -1,7 +1,8 @@
-﻿using HeracleumSosnowskyiService.Interfaces;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace HeracleumSosnowskyiService.Models
 {
@@ -17,6 +18,8 @@ namespace HeracleumSosnowskyiService.Models
         public string? MimeType { get; set; }
 
         public long LastModified { get; set; } = 0;
+
+        public string? FileStreamId { get; set; }
 
         public Dataset? Datasets { get; set; }
     }

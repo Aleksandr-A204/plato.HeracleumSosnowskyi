@@ -5,7 +5,9 @@ using HeracleumSosnowskyiService.MongoDb.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
+using System.IO;
 
 namespace HeracleumSosnowskyiService.Repositories
 {
@@ -20,9 +22,6 @@ namespace HeracleumSosnowskyiService.Repositories
 
         public IGridFSBucket GridFilesStream() => new GridFSBucket(Database);
 
-        //public async Task<IEnumerable<Dataset>> GetAllAsync()
-        //    => await _context.Datasets.Include(x => x.FileInfo).Include(x => x.SatelliteData).ToListAsync();
-
         public async Task<IEnumerable<FileInfoApi>> GetAllFileInfoAsync() => await _context.FileInfo.ToListAsync();
 
         public async Task<bool> TryAddAsync(FileInfoApi fileInfo)
@@ -33,12 +32,14 @@ namespace HeracleumSosnowskyiService.Repositories
 
         public async Task<FileInfoApi> GetFileInfoByIdAsync(Ulid id) => 
             await _context.FileInfo.Include(x => x.Datasets).FirstOrDefaultAsync(field => field.Id == id) ?? new FileInfoApi();
+        public async Task<FileInfoApi> GetFileInfoByIdAsync(string id) =>
+            await _context.FileInfo.Include(x => x.Datasets).FirstOrDefaultAsync(field => field.FileStreamId == id) ?? new FileInfoApi();
 
         public async Task<bool> SaveAsync() => await _context.SaveChangesAsync() > 0;
 
-        public async Task<bool> TryUpdateAsync(Dataset datasets)
+        public async Task<bool> TryUpdateAsync(FileInfoApi fileInfo)
         {
-            _context.Entry(datasets).State = EntityState.Modified;
+            _context.Entry(fileInfo).State = EntityState.Modified;
             return await SaveAsync();
         }
 
@@ -46,7 +47,27 @@ namespace HeracleumSosnowskyiService.Repositories
             => await _context.SatelliteData.FirstOrDefaultAsync(field 
                 => field.LandsatProductId == landsatProductId) ?? new SatelliteDataOfSpacesystem { LandsatProductId = landsatProductId };
 
-        public async Task<string> UploadFileStreamAsync(string filename, Stream source) 
-            => (await GridFilesStream().UploadFromStreamAsync(filename, source)).ToString();
+        public async Task<string> UploadFileStreamAsync(string filename, Stream source)
+        {
+            var fileInfo = await FindByFilenameAsync(filename);
+
+            if (fileInfo != null)
+                await GridFilesStream().DeleteAsync(fileInfo.Id);
+
+            return (await GridFilesStream().UploadFromStreamAsync(filename, source)).ToString();
+        }
+
+        private async Task<GridFSFileInfo> FindByFilenameAsync(string filename)
+        {
+            var filter = Builders<GridFSFileInfo>.Filter.Eq(info => info.Filename, filename);
+            var fileInfos = await GridFilesStream().FindAsync(filter);
+
+            return fileInfos.FirstOrDefault();
+        }
+
+        public async Task<byte[]> DownloadAsBytesAsync(ObjectId id) => await GridFilesStream().DownloadAsBytesAsync(id);
+
+        public async Task<GridFSDownloadStream<ObjectId>> DownloadFileStreamAsync(ObjectId id) 
+            => await GridFilesStream().OpenDownloadStreamAsync(id);        
     }
 }

@@ -9,6 +9,7 @@ namespace HeracleumSosnowskyiService.Repositories
         Task<IEnumerable<SatelliteDataOfSpacesystem>> GetSatellitesDataAsync();
         Task<IEnumerable<Dataset>> GetDatasetsBySatelliteDataIdAsync(Ulid id);
         Task<SatelliteDataOfSpacesystem> GetByIdAsync(Ulid id);
-        Task<GridFSDownloadStream<ObjectId>> DouwloadFileStreamAsync(ObjectId fileId);
+        Task<GridFSDownloadStream<ObjectId>> DownloadFileStreamAsync(ObjectId fileId);
+        Task<byte[]> DownloadAsBytesAsync(ObjectId id);
     }
 }
