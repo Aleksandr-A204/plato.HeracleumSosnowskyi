@@ -2,7 +2,7 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 REM Добавим SAGA_GIS в системную переменную среды.
-SET path=%path%C:\Program Files\SAGA-GIS-9.2.1
+SET path=%path%;C:\Program Files\SAGA-GIS-9.2.1
 
 PUSHD %1
 IF ERRORLEVEL 1 GOTO :eof
@@ -18,39 +18,27 @@ FOR %%a IN (*B?.tif) DO (
 	IF NOT EXIST !FILENAME_SGRD! saga_cmd io_gdal 0 -FILES="%%a" -GRIDS="!FILENAME_SGRD!"
 )
 
+SET files=
+FOR %%a IN (*B?.tif) DO (
+	SET FILENAME_SGRD=%%a.sgrd
+	IF DEFINED files (
+		SET files=!files!;!FILENAME_SGRD!
+	) ELSE (
+		SET files=!FILENAME_SGRD!
+	)
+	IF NOT EXIST !FILENAME_SGRD! saga_cmd io_gdal 0 -FILES="%%a" -GRIDS="!FILENAME_SGRD!"
+)
 IF NOT DEFINED files ECHO Something went wrong... & GOTO :eof
 
-SET NDVI_TIF=%~n1_NDVI_GTR33.TIF
-IF NOT EXIST "%NDVI_TIF%" saga_cmd grid_calculus 1 ^
+SET CSV_SGRD=%~n1_CSV.sgrd
+IF NOT EXIST "%CSV_SGRD%" saga_cmd grid_calculus 1 ^
  -GRIDS="%files%" ^
- -RESULT="%NDVI_TIF%" ^
- -FORMULA="gt((g5-g4)/(g5+g4), 0.33)"
-
-SET ABI_TIF=%~n1_ABI_IVL.TIF
-IF NOT EXIST "%ABI_TIF%" saga_cmd grid_calculus 1 ^
- -GRIDS="%files%" ^
- -RESULT="%ABI_TIF%" ^
- -FORMULA="and(and(gt(abs(g3-g2), 1790), lt(abs(g3-g2), 2210)), and(gt(g5, 23000), lt(g5, 30000)))"
- 
-SET HSI_TIF_ITERVAL=%~n1_HSI_IVL.TIF
-IF NOT EXIST "%HSI_TIF_ITERVAL%" saga_cmd grid_calculus 1 ^
- -GRIDS="%files%" ^
- -RESULT="%HSI_TIF_ITERVAL%" ^
- -FORMULA="and(gt(g4/abs(g2-g1), 11), lt(g5/abs(g3-g2), 17))"
-
-SET SPLI_SGRD=%~n1_SPLI.sgrd
-SET SPLI_TIF=%~n1_SPLI.TIF
-IF NOT EXIST "%SPLI_SGRD%" saga_cmd grid_calculus 1 ^
- -GRIDS="%files%" ^
- -RESULT="%SPLI_SGRD%" ^
+ -RESULT="%CSV_SGRD%" ^
  -FORMULA="and(and(eq(and(gt(g2, 8400), lt(g2, 8605)), 1), eq(and(gt(g3, 10400), lt(g3, 10730)), 1)), and(eq(and(gt(g4, 8750), lt(g4, 9220)), 1), eq(and(gt(g5, 23000), lt(g5, 29500)), 1)))"
-IF NOT EXIST "%SPLI_TIF%" saga_cmd io_gdal 2 ^
- -GRIDS="%SPLI_SGRD%" ^
- -FILE="%SPLI_TIF%"
 
 REM Convert of raster to vector.
 IF NOT EXIST "%~n1_POLYGONS.shp" saga_cmd shapes_grid 6 ^
- -GRID="%SPLI_SGRD%" ^
+ -GRID="%CSV_SGRD%" ^
  -POLYGONS="%~n1_POLYGONS.shp" ^
  -CLASS_ALL="0" ^
  -CLASS_ID="1" ^
@@ -65,15 +53,16 @@ IF NOT EXIST "%~n1_PROPS.shp" saga_cmd shapes_polygons 2 ^
 -BAREA 1
 
 REM The ID field is enumerable.
-IF NOT EXIST "%~n1_ENUM.shp" saga_cmd table_tools 21 ^
+saga_cmd table_tools 2 ^
 -INPUT "%~n1_PROPS.shp" ^
--ENUM ID ^
--OUTPUT "%~n1_ENUM.shp"
+-ENUM ID
 
 IF NOT EXIST "%~n1_PARAMS.shp" saga_cmd shapes_grid 1 ^
--SHAPES "%~n1_ENUM.shp" ^
+-SHAPES "%~n1_PROPS.shp" ^
 -GRIDS "%files%" ^
 -RESULT "%~n1_PARAMS.shp"
+
+GOTO :eof
 
 IF NOT EXIST "%~n1_RPL.shp" saga_cmd table_tools 10 ^
 -TABLE "%~n1_PARAMS.shp" ^

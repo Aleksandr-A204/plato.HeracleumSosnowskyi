@@ -1,11 +1,10 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.Serialization;
+
 
 namespace HeracleumSosnowskyiService.Models
 {
+    [Index(nameof(FileName), IsUnique = true)]
     public class FileInfoApi
     {
         [Key]
@@ -17,7 +16,7 @@ namespace HeracleumSosnowskyiService.Models
         [Required(ErrorMessage = "Ошибка запроса. Требуется информация о файле.")]
         public string? MimeType { get; set; }
 
-        public long LastModified { get; set; } = 0;
+        public long? LastModified { get; set; }
 
         public string? FileStreamId { get; set; }
 

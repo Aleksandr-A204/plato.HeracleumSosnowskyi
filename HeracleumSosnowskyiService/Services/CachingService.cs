@@ -1,5 +1,4 @@
-﻿using HeracleumSosnowskyiService.Interfaces;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 
 namespace HeracleumSosnowskyiService.Services
 {

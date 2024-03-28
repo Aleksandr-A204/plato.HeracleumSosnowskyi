@@ -1,4 +1,4 @@
-﻿using HeracleumSosnowskyiService.RasterImages;
+﻿using MaxRev.Gdal.Core;
 using OSGeo.GDAL;
 using OSGeo.OSR;
 
@@ -13,7 +13,7 @@ namespace HeracleumSosnowskyiService.RasterInfo
 
             if (!_rasterConfigur)
             {
-                Gdal.AllRegister();
+                GdalBase.ConfigureAll();
                 _rasterConfigur = true;
             }
 

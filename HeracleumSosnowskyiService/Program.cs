@@ -11,10 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSection(nameof(MongoDbConfiguration)));
 
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
-builder.Services.AddScoped<ISatelliteDataRepository, SatelliteDataRepository>();
 builder.Services.AddScoped<IDatasetsRepository, DatasetsRepository>();
-//builder.Services.AddScoped<ICachingService, CachingService>();
-builder.Services.AddScoped<IProcessService, ProcessService>();
 
 builder.Services.AddDbContext<PostgreSQLDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

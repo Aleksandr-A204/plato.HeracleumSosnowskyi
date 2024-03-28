@@ -13,8 +13,8 @@ namespace HeracleumSosnowskyiService.Data.PostgreSQL
         }
 
         public DbSet<FileInfoApi> FileInfo { get; set; }
+        public DbSet<LandsatMetadata> LandsatMetadata { get; set; }
         public DbSet<Dataset> Datasets { get; set; }
-        public DbSet<SatelliteDataOfSpacesystem> SatelliteData { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

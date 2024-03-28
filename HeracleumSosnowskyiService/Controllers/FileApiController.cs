@@ -1,20 +1,11 @@
 ﻿using HeracleumSosnowskyiService.Helpers;
 using HeracleumSosnowskyiService.Models;
-using HeracleumSosnowskyiService.Models.Xml;
-using HeracleumSosnowskyiService.RasterInfo;
 using HeracleumSosnowskyiService.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.GridFS;
-using OSGeo.GDAL;
-using OSGeo.OSR;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.IO;
-using System.Xml.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace HeracleumSosnowskyiService.Controllers
 {
@@ -37,13 +28,13 @@ namespace HeracleumSosnowskyiService.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetById(string id)
+        public async Task<IActionResult> GetById(string id, CancellationToken ct)
         {
             if (!ValidationHelper.IsUlidValid(id))
                 return BadRequest("Ошибка запроса при получении файла по индентификатору id. Индентификатор некорректный.");
 
             if (!_memoryCache.TryGetValue<FileInfoApi>($"file{id}", out var fileInfo))
-                fileInfo = await _repository.GetFileInfoByIdAsync(Ulid.Parse(id));
+                fileInfo = await _repository.GetFileInfoByIdAsync(Ulid.Parse(id), ct);
 
 
             return fileInfo != null ? Ok(fileInfo) : NotFound("Ошибка репозитории при получении файла по индентификатору id. Не найдено информации о файле.");
@@ -54,9 +45,9 @@ namespace HeracleumSosnowskyiService.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateFile([FromBody] FileInfoApi fileInfo)
+        public async Task<IActionResult> CreateFile([FromBody] FileInfoApi fileInfo, CancellationToken ct)
         {
-            if (await _repository.TryAddAsync(fileInfo))
+            if (await _repository.TryAddAsync(fileInfo, ct))
                 _memoryCache.Set($"file{fileInfo.Id}", fileInfo, new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
@@ -75,7 +66,9 @@ namespace HeracleumSosnowskyiService.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Upload(
-            [Description("Идентификатор загрузки полученный при вызове CreateFile")] string id
+            [Description("Идентификатор загрузки полученный при вызове CreateFile")] 
+            [Required] string id,
+            CancellationToken ct
             )
         {
             if (!ValidationHelper.IsUlidValid(id))
@@ -87,39 +80,14 @@ namespace HeracleumSosnowskyiService.Controllers
             if (_memoryCache.TryGetValue<FileInfoApi>($"file{id}", out var fileInfo))
                 _memoryCache.Remove($"file{id}");
             else
-                fileInfo = await _repository.GetFileInfoByIdAsync(Ulid.Parse(id));
+                fileInfo = await _repository.GetFileInfoByIdAsync(Ulid.Parse(id), ct);
 
-            if (fileInfo?.FileName == null)
+            if (fileInfo == null)
                 return NotFound("Ошибка запроса при загрузке файла. Не найдено полученной при вызове CreateFile информации о файле.");
 
-            fileInfo.FileStreamId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body);
+            fileInfo.FileStreamId = await _repository.UploadOrUpdateFileStreamAsync(id, fileInfo.FileName, Request.Body, ct);
 
-            return await _repository.TryUpdateAsync(fileInfo) ? Ok(new { id = fileInfo.FileStreamId }) : NotFound("Не удалось загрузить файл.");
+            return await _repository.TryUpdateAsync(fileInfo, ct) ? Ok(new { id = fileInfo.FileStreamId }) : NotFound("Не удалось загрузить файл.");
         }
-
-        [HttpPost]
-        [Route("readxml/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Read(
-            [Description("Идентификатор загрузки полученный при вызове Upload")] string id
-        )
-        {
-            if (!ValidationHelper.IsBsonIdValid(id))
-                return BadRequest("Ошибка запроса при загрузке файла. Полученный при вызове Upload идентификатор загрузки файла некорректный.");
-
-            if (_memoryCache.TryGetValue<FileInfoApi>($"file{id}", out var fileInfo))
-                _memoryCache.Remove($"file{id}");
-            else
-                fileInfo = await _repository.GetFileInfoByIdAsync(Ulid.Parse(id));
-
-            if (fileInfo?.FileName == null)
-                return NotFound("Ошибка запроса при загрузке файла. Не найдено полученной при вызове CreateFile информации о файле.");
-
-            fileInfo.FileStreamId = await _repository.UploadFileStreamAsync(fileInfo.FileName, Request.Body);
-
-            return await _repository.TryUpdateAsync(fileInfo) ? Ok(new { id = fileInfo.FileStreamId }) : NotFound("Не удалось загрузить файл.");
-        }
-
     }
 }
