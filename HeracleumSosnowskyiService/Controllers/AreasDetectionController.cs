@@ -57,7 +57,7 @@ namespace HeracleumSosnowskyiService.Controllers
             if (!await _repository.TryAddMetadataAsync(_metadata))
                 return NotFound("Ошибка при добавлении данных о файле в БД.");
 
-            //if (await _repository.TryAddAsync(metadata))
+            //if (await _repository.TryAddMetadataAsync(metadata))
             //    _memoryCache.Set($"landsatMetadata{metadata.Id}", metadata, new MemoryCacheEntryOptions
             //    {
             //        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
@@ -65,7 +65,7 @@ namespace HeracleumSosnowskyiService.Controllers
             //    });
             //else
             //    return NotFound("Ошибка при добавлении данных о файле в БД.");
-
+             
             var fileInfoId = await _repository.GetInfoFileAsync(id);
 
             var dataset = new Dataset()
@@ -131,10 +131,10 @@ namespace HeracleumSosnowskyiService.Controllers
         [HttpPost]
         public async Task<IActionResult> StartCalculate(CancellationToken ct)
         {
-            if(_subdirPath == null)
+            if (_subdirPath == null)
                 return NotFound("Subdir path isn't not found.");
 
-            await ProcessService.RunCmdLineAsync(_subdirPath, ct);
+            await ProcessService.RunCmdLineAsync(_subdirPath, Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "net8.0"));
 
             return Ok();
         }

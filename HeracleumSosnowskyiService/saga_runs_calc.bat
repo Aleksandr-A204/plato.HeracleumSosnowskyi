@@ -18,16 +18,16 @@ FOR %%a IN (*B?.tif) DO (
 	IF NOT EXIST !FILENAME_SGRD! saga_cmd io_gdal 0 -FILES="%%a" -GRIDS="!FILENAME_SGRD!"
 )
 
-SET files=
-FOR %%a IN (*B?.tif) DO (
-	SET FILENAME_SGRD=%%a.sgrd
-	IF DEFINED files (
-		SET files=!files!;!FILENAME_SGRD!
+SET allfiles=
+FOR %%a IN (*.tif) DO (
+	SET FILENAME=%%a
+	IF DEFINED allfiles (
+		SET allfiles=!allfiles!;!FILENAME!
 	) ELSE (
-		SET files=!FILENAME_SGRD!
+		SET allfiles=!FILENAME!
 	)
-	IF NOT EXIST !FILENAME_SGRD! saga_cmd io_gdal 0 -FILES="%%a" -GRIDS="!FILENAME_SGRD!"
 )
+
 IF NOT DEFINED files ECHO Something went wrong... & GOTO :eof
 
 SET CSV_SGRD=%~n1_CSV.sgrd
@@ -59,10 +59,8 @@ saga_cmd table_tools 2 ^
 
 IF NOT EXIST "%~n1_PARAMS.shp" saga_cmd shapes_grid 1 ^
 -SHAPES "%~n1_PROPS.shp" ^
--GRIDS "%files%" ^
+-GRIDS "%allfiles%" ^
 -RESULT "%~n1_PARAMS.shp"
-
-GOTO :eof
 
 IF NOT EXIST "%~n1_RPL.shp" saga_cmd table_tools 10 ^
 -TABLE "%~n1_PARAMS.shp" ^

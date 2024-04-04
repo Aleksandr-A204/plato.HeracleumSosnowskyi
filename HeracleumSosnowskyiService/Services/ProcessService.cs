@@ -4,10 +4,10 @@ namespace HeracleumSosnowskyiService.Services
 {
     public static class ProcessService
     {
-        public static async Task RunCmdLineAsync(string arguments)
+        public static async Task RunCmdLineAsync(string arguments, string assembly)
         {
             // Populate process information
-            var processInfo = new ProcessStartInfo("cmd.exe", $"/c saga_runs_calc.bat \"{arguments}\"");
+            var processInfo = new ProcessStartInfo("cmd.exe", $"/c saga_runs_calc.bat \"{arguments}\" \"{assembly}\"");
 
             processInfo.CreateNoWindow = true;
             processInfo.UseShellExecute = false;
