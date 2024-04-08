@@ -65,9 +65,8 @@ namespace HeracleumSosnowskyiService.Controllers
             //    });
             //else
             //    return NotFound("Ошибка при добавлении данных о файле в БД.");
-             
             var fileInfoId = await _repository.GetInfoFileAsync(id);
-
+            
             var dataset = new Dataset()
             {
                 FileStreamId = id,
