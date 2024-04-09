@@ -79,7 +79,7 @@ namespace HeracleumSosnowskyiService.Controllers
                 return StatusCode(500);
 
             var dirPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent;
-            var subdirPath = Path.Combine(dirPath.FullName, "SatelliteImages");
+            var subdirPath = Path.Combine(dirPath.FullName, "SatelliteImages"); 
 
             if (!Directory.Exists(subdirPath))
                 dirPath.CreateSubdirectory("SatelliteImages");
